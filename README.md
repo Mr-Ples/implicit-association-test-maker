@@ -63,123 +63,122 @@ Do some eisting tests here: https://implicit.harvard.edu/implicit/takeatest.html
 <table width="100%" cellpadding="6">
   <thead>
     <tr>
-      <th align="left" nowrap width="18%">IAT domain</th>
-      <th align="left" nowrap width="14%">Approx. Cohen’s d</th>
-      <th align="left" nowrap width="14%">Interpretation</th>
+      <th align="left" width="10%">IAT domain</th>
+      <th align="left" width="14%">Interpretation</th>
       <th align="left" width="18%">What it means in practice</th>
     </tr>
   </thead>
   <tbody>
     <tr>
-      <td nowrap>Sexual orientation IAT</td>
+      <td >Sexual orientation IAT</td>
       <td>d ≈ 1.15–1.96</td>
       <td>Large to very large</td>
       <td>Gay participants usually show much faster same-sex positive associations; straight participants show the reverse. One of the strongest IAT domains because orientation is highly stable and deeply automatized.</td>
     </tr>
     <tr>
-      <td nowrap>Sexual orientation IAT</td>
+      <td >Sexual orientation IAT</td>
       <td>d ≈ 0.87–1.50</td>
       <td>Moderate-large to very large</td>
       <td>Implicit responses often align strongly with objective arousal measures, sometimes even more closely than self-report in ambiguous cases.</td>
     </tr>
     <tr>
-      <td nowrap>Political IAT</td>
+      <td >Political IAT</td>
       <td>d ≈ 0.87–1.50</td>
       <td>Moderate-large to very large</td>
       <td>Conservatives and liberals show rapid automatic associations with party symbols, policies, or ideological words that strongly predict actual voting preferences.</td>
     </tr>
     <tr>
-      <td nowrap>Suicide / death IAT</td>      
+      <td >Suicide / death IAT</td>      
       <td>d ≈ 0.70–1.10</td>
       <td>Moderate-large</td>
       <td>People who implicitly associate “self” with “death” are statistically more likely to attempt suicide later. One of the clinically important IAT findings.</td>
     </tr>
     <tr>
-      <td nowrap>Religion IAT</td>      
+      <td >Religion IAT</td>      
       <td>d ≈ 0.63–1.15</td>
       <td>Moderate to large</td>
       <td>Religious participants automatically associate religion with truth, morality, or self-identity more strongly than nonreligious participants.</td>
     </tr>
     <tr>
-      <td nowrap>Gender-science IAT</td>      
+      <td >Gender-science IAT</td>      
       <td>d ≈ 0.63–1.01</td>
       <td>Moderate to large</td>
       <td>Countries with stronger implicit “male = science” associations tend to have fewer women in STEM fields.</td>
     </tr>
     <tr>
-      <td nowrap>Phobia IAT</td>      
+      <td >Phobia IAT</td>      
       <td>d ≈ 0.63–1.01</td>
       <td>Moderate to large</td>
       <td>Spider-phobic people rapidly associate spiders with danger and show measurable avoidance behavior.</td>
     </tr>
     <tr>
-      <td nowrap>Smoking IAT</td>      
+      <td >Smoking IAT</td>      
       <td>d ≈ 0.52–0.87</td>
       <td>Moderate</td>
       <td>Smokers often show stronger positive automatic associations with cigarettes; these can predict relapse risk after quitting attempts.</td>
     </tr>
     <tr>
-      <td nowrap>Alcohol IAT</td>      
+      <td >Alcohol IAT</td>      
       <td>d ≈ 0.41–0.75</td>
       <td>Small-moderate</td>
       <td>Positive implicit alcohol associations correlate with binge drinking and difficulty controlling consumption.</td>
     </tr>
     <tr>
-      <td nowrap>Gender-career IAT</td>      
+      <td >Gender-career IAT</td>      
       <td>d ≈ 0.52–0.87</td>
       <td>Moderate</td>
       <td>Stronger “male = career / female = family” associations correlate with conventional gender-role beliefs and occupational preferences.</td>
     </tr>
     <tr>
-      <td nowrap>Race stereotype IAT</td>      
+      <td >Race stereotype IAT</td>      
       <td>d ≈ 0.52–0.87</td>
       <td>Moderate</td>
       <td>Faster “Black = threat” associations predict greater false-positive “shoot” decisions in laboratory simulations.</td>
     </tr>
     <tr>
-      <td nowrap>Race attitude IAT</td>      
+      <td >Race attitude IAT</td>      
       <td>d ≈ 0.41–0.75</td>
       <td>Small-moderate</td>
       <td>Higher implicit racial bias predicts subtler behaviors like interpersonal distance, nervousness, or reduced warmth during interracial interactions.</td>
     </tr>
     <tr>
-      <td nowrap>Race attitude IAT</td>      
+      <td >Race attitude IAT</td>      
       <td>d ≈ 0.30–0.63</td>
       <td>Small to moderate</td>
       <td>The effects are usually not dramatic overt discrimination; they appear more in micro-behaviors and split-second judgments.</td>
     </tr>
     <tr>
-      <td nowrap>Consumer-brand IAT</td>      
+      <td >Consumer-brand IAT</td>      
       <td>d ≈ 0.41–0.87</td>
       <td>Small-moderate to moderate</td>
       <td>Automatic positive reactions toward brands often predict spontaneous consumer choices better than stated preferences.</td>
     </tr>
     <tr>
-      <td nowrap>Thin-fat attitude IAT</td>      
+      <td >Thin-fat attitude IAT</td>      
       <td>d ≈ 0.41–0.75</td>
       <td>Small-moderate</td>
       <td>Many participants implicitly associate obesity with laziness or incompetence, which predicts biased evaluations.</td>
     </tr>
     <tr>
-      <td nowrap>Anxiety IAT</td>      
+      <td >Anxiety IAT</td>      
       <td>d ≈ 0.41–0.75</td>
       <td>Small-moderate</td>
       <td>People with anxiety disorders tend to associate self-related concepts with threat or vulnerability more rapidly.</td>
     </tr>
     <tr>
-      <td nowrap>Math-gender stereotype IAT</td>      
+      <td >Math-gender stereotype IAT</td>      
       <td>d ≈ 0.30–0.63</td>
       <td>Small to moderate</td>
       <td>Implicit stereotypes can modestly predict reduced performance when stereotype threat is activated.</td>
     </tr>
     <tr>
-      <td nowrap>Age attitude IAT</td>      
+      <td >Age attitude IAT</td>      
       <td>d ≈ 0.30–0.63</td>
       <td>Small to moderate</td>
       <td>Younger faces are implicitly preferred by many participants, and this can affect judgments about competence or employability.</td>
     </tr>
     <tr>
-      <td nowrap>Self-esteem IAT</td>      
+      <td >Self-esteem IAT</td>      
       <td>d ≈ 0.20–0.52</td>
       <td>Very small to moderate</td>
       <td>Implicit self-esteem correlates only weakly with consciously reported self-esteem, suggesting partially distinct psychological systems.</td>
