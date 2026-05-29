@@ -55,6 +55,9 @@ Pilot mode is intentionally shorter than the full run. It uses only the first tw
 
 ## Existing IAT predictive validity
 
+Do some eisting tests here: https://implicit.harvard.edu/implicit/takeatest.html
+
+
 | IAT domain                 |                         Predicted outcome | Typical association | Approx. Cohen’s d | Interpretation               | What it means in practice                                                                                                                                                                                       |
 | -------------------------- | ----------------------------------------: | ------------------: | ----------------: | ---------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Sexual orientation IAT     |        Self-identified sexual orientation |         r ≈ .50–.70 |     d ≈ 1.15–1.96 | Large to very large          | Gay participants usually show much faster same-sex positive associations; straight participants show the reverse. One of the strongest IAT domains because orientation is highly stable and deeply automatized. |
