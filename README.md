@@ -51,7 +51,7 @@ The app stores each participant's questionnaire answers, trial-level responses, 
 
 Positive D-scores indicate faster compatible-pair classifications than incompatible-pair classifications for the configured category order.
 
-Pilot mode is intentionally shorter than the full run. It uses only the first two single-category blocks, so participants usually complete 40 trials before seeing the pilot review screen.
+Pilot mode is intentionally shorter than the full run. It uses only the first two single-category blocks and includes every stimulus in those blocks at least once before the pilot review screen.
 
 ## Existing IAT predictive validity
 
@@ -79,5 +79,4 @@ Do some eisting tests here: https://implicit.harvard.edu/implicit/takeatest.html
 | Math-gender stereotype IAT |  Math performance under stereotype threat |         r ≈ .15–.30 |     d ≈ 0.30–0.63 | Small to moderate            | Implicit stereotypes can modestly predict reduced performance when stereotype threat is activated.                                                                                                              |
 | Age attitude IAT           |              Hiring bias / age preference |         r ≈ .15–.30 |     d ≈ 0.30–0.63 | Small to moderate            | Younger faces are implicitly preferred by many participants, and this can affect judgments about competence or employability.                                                                                   |
 | Self-esteem IAT            |                      Explicit self-esteem |         r ≈ .10–.25 |     d ≈ 0.20–0.52 | Very small to moderate       | Implicit self-esteem correlates only weakly with consciously reported self-esteem, suggesting partially distinct psychological systems.                                                                         |
-
 

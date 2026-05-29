@@ -123,8 +123,24 @@ export function createTrialPlan(definition: TestDefinition): Array<Omit<Trial, "
 
 export function createPilotTrialPlan(definition: TestDefinition): Array<Omit<Trial, "responseSide" | "latencyMs" | "correct">> {
   return [
-    block(1, 20, ["conceptA", "conceptB"], conceptBlockConfig("normal", definition), "target", "training", definition),
-    block(2, 20, ["attributeA", "attributeB"], attributeBlockConfig(definition), "attribute", "training", definition),
+    block(
+      1,
+      definition.conceptA.items.length + definition.conceptB.items.length,
+      ["conceptA", "conceptB"],
+      conceptBlockConfig("normal", definition),
+      "target",
+      "training",
+      definition,
+    ),
+    block(
+      2,
+      definition.attributeA.items.length + definition.attributeB.items.length,
+      ["attributeA", "attributeB"],
+      attributeBlockConfig(definition),
+      "attribute",
+      "training",
+      definition,
+    ),
   ].flat();
 }
 
