@@ -2,7 +2,7 @@ import { Form, Link, redirect, useActionData, useLoaderData } from "react-router
 import { useEffect, useMemo, useState } from "react";
 import type { Route } from "./+types/create";
 import { createTest, getTest } from "~/lib/db.server";
-import { defaultDefinition, normalizeDefinition } from "~/lib/iat";
+import { defaultDefinition, isDefaultQuestionnaireQuestion, normalizeDefinition } from "~/lib/iat";
 import type { QuestionnaireQuestion, TestDefinition } from "~/lib/types";
 
 type StimulusText = Record<"conceptA" | "conceptB" | "attributeA" | "attributeB", string>;
@@ -114,22 +114,6 @@ export default function CreateRoute() {
 
         {step === 1 ? (
           <section className="wizard-panel">
-            <div className="section-heading">
-              <h2>Test setup</h2>
-              <p>Define the four categories and their stimuli. This is the part that becomes the actual IAT.</p>
-            </div>
-
-            <div className="info-grid">
-              <article className="info-box">
-                <h3>Target concepts</h3>
-                <p>The two things you want to compare, like names, groups, products, or ideas.</p>
-              </article>
-              <article className="info-box">
-                <h3>Attribute categories</h3>
-                <p>The two poles that get paired with the concepts, like good/bad or pleasant/unpleasant.</p>
-              </article>
-            </div>
-
             <div className="builder-form">
               <label>
                 Test name
@@ -269,66 +253,82 @@ function QuestionnaireEditor({
         </button>
       </div>
 
-      {definition.questionnaire.length ? definition.questionnaire.map((question, index) => (
-        <fieldset className="panel question-row" key={question.id}>
-          <legend>Question {index + 1}</legend>
-          <p className="panel-help">Use this for demographics, screening, or study notes that matter before the IAT starts.</p>
-          <label>
-            Prompt
-            <input value={question.prompt} onChange={(event) => updateQuestion(question.id, { prompt: event.target.value })} />
-          </label>
-          <label>
-            Type
-            <select
-              value={question.type}
-              onChange={(event) =>
-                updateQuestion(question.id, {
-                  type: event.target.value as QuestionnaireQuestion["type"],
-                  options: event.target.value === "select" ? question.options : [],
-                })
-              }
-            >
-              <option value="text">Text</option>
-              <option value="number">Number</option>
-              <option value="select">Select</option>
-            </select>
-          </label>
-          {question.type === "select" ? (
+      {definition.questionnaire.length ? definition.questionnaire.map((question, index) => {
+        const fixedQuestion = isDefaultQuestionnaireQuestion(question.id);
+
+        return (
+          <fieldset className="panel question-row" key={question.id}>
+            <legend>Question {index + 1}</legend>
+            <p className="panel-help">
+              {fixedQuestion
+                ? "This baseline demographic question is always included in the participant questionnaire."
+                : "Use this for demographics, screening, or study notes that matter before the IAT starts."}
+            </p>
             <label>
-              Options, one per line
-              <textarea
-                value={question.options.join("\n")}
-                onChange={(event) =>
-                  updateQuestion(question.id, {
-                    options: event.target.value.split("\n").map((item) => item.trim()).filter(Boolean),
-                  })
-                }
+              Prompt
+              <input
+                disabled={fixedQuestion}
+                value={question.prompt}
+                onChange={(event) => updateQuestion(question.id, { prompt: event.target.value })}
               />
             </label>
-          ) : null}
-          <label className="check">
-            <input
-              type="checkbox"
-              checked={question.required}
-              onChange={(event) => updateQuestion(question.id, { required: event.target.checked })}
-            />
-            Required
-          </label>
-          <button
-            className="button danger"
-            type="button"
-            onClick={() => {
-              markDirty();
-              setDefinition({
-                ...definition,
-                questionnaire: definition.questionnaire.filter((item) => item.id !== question.id),
-              });
-            }}
-          >
-            Remove
-          </button>
-        </fieldset>
-      )) : <p className="empty">Add at least one question if you want to screen or profile participants first.</p>}
+            <label>
+              Type
+              <select
+                disabled={fixedQuestion}
+                value={question.type}
+                onChange={(event) =>
+                  updateQuestion(question.id, {
+                    type: event.target.value as QuestionnaireQuestion["type"],
+                    options: event.target.value === "select" ? question.options : [],
+                  })
+                }
+              >
+                <option value="text">Text</option>
+                <option value="number">Number</option>
+                <option value="select">Select</option>
+              </select>
+            </label>
+            {question.type === "select" ? (
+              <label>
+                Options, one per line
+                <textarea
+                  disabled={fixedQuestion}
+                  value={question.options.join("\n")}
+                  onChange={(event) =>
+                    updateQuestion(question.id, {
+                      options: event.target.value.split("\n").map((item) => item.trim()).filter(Boolean),
+                    })
+                  }
+                />
+              </label>
+            ) : null}
+            <label className="check">
+              <input
+                type="checkbox"
+                disabled={fixedQuestion}
+                checked={question.required}
+                onChange={(event) => updateQuestion(question.id, { required: event.target.checked })}
+              />
+              Required
+            </label>
+            <button
+              className="button danger"
+              type="button"
+              disabled={fixedQuestion}
+              onClick={() => {
+                markDirty();
+                setDefinition({
+                  ...definition,
+                  questionnaire: definition.questionnaire.filter((item) => item.id !== question.id),
+                });
+              }}
+            >
+              Remove
+            </button>
+          </fieldset>
+        );
+      }) : <p className="empty">Add at least one question if you want to screen or profile participants first.</p>}
     </section>
   );
 }

@@ -134,6 +134,12 @@ export default function TestRoute() {
                     <option value="">Choose</option>
                     {question.options.map((option) => <option key={option} value={option}>{option}</option>)}
                   </select>
+                ) : question.type === "text" ? (
+                  <textarea
+                    required={question.required}
+                    value={answers[question.id] ?? ""}
+                    onChange={(event) => setAnswers({ ...answers, [question.id]: event.target.value })}
+                  />
                 ) : (
                   <input
                     required={question.required}

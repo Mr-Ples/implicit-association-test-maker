@@ -1,4 +1,4 @@
-import { scoreTrials } from "./iat";
+import { normalizeDefinition, scoreTrials } from "./iat";
 import type { PilotFeedback, PilotSessionRecord, ResponseRecord, TestDefinition, TestRecord, Trial } from "./types";
 
 type TestRow = {
@@ -50,7 +50,7 @@ export async function listTests(db: D1Database): Promise<TestRecord[]> {
       id: row.id,
       name: row.name,
       description: row.description,
-      definition: JSON.parse(row.definition_json) as TestDefinition,
+      definition: parseDefinition(row.definition_json),
       createdAt: row.created_at,
       responseCount: scores.length,
       averageDScore: scores.length ? scores.reduce((total, score) => total + score, 0) / scores.length : null,
@@ -70,7 +70,7 @@ export async function getTest(db: D1Database, id: string) {
     id: row.id,
     name: row.name,
     description: row.description,
-    definition: JSON.parse(row.definition_json) as TestDefinition,
+    definition: parseDefinition(row.definition_json),
     createdAt: row.created_at,
   };
 }
@@ -167,6 +167,10 @@ function mapResponse(row: ResponseRow): ResponseRecord {
     score: JSON.parse(row.score_json) as ReturnType<typeof scoreTrials>,
     createdAt: row.created_at,
   };
+}
+
+function parseDefinition(json: string): TestDefinition {
+  return normalizeDefinition(JSON.parse(json));
 }
 
 function mapPilotSession(row: PilotSessionRow): PilotSessionRecord {

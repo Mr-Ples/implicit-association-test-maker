@@ -8,6 +8,47 @@ import type {
 } from "./types";
 
 const MIN_ITEMS = 2;
+const DECLINE_TO_ANSWER = "Decline to answer";
+const DEFAULT_QUESTIONNAIRE: QuestionnaireQuestion[] = [
+  {
+    id: "demographic-age",
+    prompt: "Age",
+    type: "select",
+    options: ["Under 18", "18-24", "25-34", "35-44", "45-54", "55-64", "65 or older", DECLINE_TO_ANSWER],
+    required: false,
+  },
+  {
+    id: "demographic-sex-identity",
+    prompt: "Sex / identity",
+    type: "select",
+    options: ["Woman", "Man", "Non-binary", "Self-describe", DECLINE_TO_ANSWER],
+    required: false,
+  },
+  {
+    id: "demographic-ethnicity",
+    prompt: "Ethnicity",
+    type: "select",
+    options: [
+      "Asian",
+      "Black or African American",
+      "Hispanic or Latino/a/x",
+      "Middle Eastern or North African",
+      "Native American or Alaska Native",
+      "Native Hawaiian or Pacific Islander",
+      "White",
+      "Multiracial",
+      "Another identity",
+      DECLINE_TO_ANSWER,
+    ],
+    required: false,
+  },
+];
+
+const DEFAULT_QUESTIONNAIRE_IDS = new Set(DEFAULT_QUESTIONNAIRE.map((question) => question.id));
+
+export function isDefaultQuestionnaireQuestion(id: string) {
+  return DEFAULT_QUESTIONNAIRE_IDS.has(id);
+}
 
 export function defaultDefinition(): TestDefinition {
   return {
@@ -15,17 +56,9 @@ export function defaultDefinition(): TestDefinition {
     description: "",
     conceptA: { label: "Concept A", items: ["Alpha", "Beta"] },
     conceptB: { label: "Concept B", items: ["Gamma", "Delta"] },
-    attributeA: { label: "Good", items: ["Good", "Joy", "Excellent", "Positive", "Nice", "Great", "Love", "Like", "Happy", "Pleasant"] },
-    attributeB: { label: "Bad", items: ["Bad", "Pain", "Negative", "Awful", "Unpleasant", "Terrible", "Hate", "Dislike", "Sad", "Depressed"] },
-    questionnaire: [
-      {
-        id: crypto.randomUUID(),
-        prompt: "Participant group",
-        type: "text",
-        options: [],
-        required: false,
-      },
-    ],
+    attributeA: { label: "Good", items: ["Good", "Joy", "Excellent", "Positive", "Nice", "Great", "Like", "Happy", "Pleasant"] },
+    attributeB: { label: "Bad", items: ["Bad", "Pain", "Negative", "Awful", "Unpleasant", "Terrible", "Dislike", "Sad", "Depressed"] },
+    questionnaire: defaultQuestionnaire(),
   };
 }
 
@@ -182,19 +215,31 @@ function normalizeCategory(input: unknown, fallback: string) {
 }
 
 function normalizeQuestionnaire(input: unknown): QuestionnaireQuestion[] {
-  if (!Array.isArray(input)) return [];
-
-  return input.slice(0, 24).map((question, index) => {
+  const customQuestions = Array.isArray(input) ? input : [];
+  const normalized = customQuestions.slice(0, 24).map((question, index) => {
     const value = question as Partial<QuestionnaireQuestion>;
     const type = value.type === "number" || value.type === "select" || value.type === "text" ? value.type : "text";
     return {
       id: cleanText(value.id, `q-${index + 1}`),
       prompt: cleanText(value.prompt, `Question ${index + 1}`).slice(0, 240),
       type,
-      options: type === "select" ? normalizeItems(value.options).slice(0, 12) : [],
+      options: type === "select" ? withDeclineOption(normalizeItems(value.options).slice(0, 11)) : [],
       required: Boolean(value.required),
     };
   });
+
+  return [
+    ...defaultQuestionnaire(),
+    ...normalized.filter((question) => !DEFAULT_QUESTIONNAIRE_IDS.has(question.id)),
+  ].slice(0, 24);
+}
+
+function defaultQuestionnaire() {
+  return DEFAULT_QUESTIONNAIRE.map((question) => ({ ...question, options: [...question.options] }));
+}
+
+function withDeclineOption(options: string[]) {
+  return options.includes(DECLINE_TO_ANSWER) ? options : [...options, DECLINE_TO_ANSWER];
 }
 
 function normalizeItems(input: unknown) {
