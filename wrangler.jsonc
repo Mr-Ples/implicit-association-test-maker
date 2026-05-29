@@ -1,0 +1,25 @@
+{
+	"$schema": "./node_modules/wrangler/config-schema.json",
+	"name": "implicit-association-test-maker",
+	"main": "./workers/app.ts",
+	"compatibility_date": "2026-05-29",
+	"compatibility_flags": [
+		"nodejs_compat"
+	],
+	"assets": {
+		"directory": "./build/client"
+	},
+	"d1_databases": [
+		{
+			"binding": "DB",
+			"database_name": "iat-maker",
+			"database_id": "replace-with-your-d1-database-id",
+			"migrations_dir": "migrations"
+		},
+		{
+			"binding": "iat_maker",
+			"database_name": "iat-maker",
+			"database_id": "a018868b-9979-472f-a9f5-9489a72afa9f"
+		}
+	]
+}

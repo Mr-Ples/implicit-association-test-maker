@@ -1,0 +1,31 @@
+{
+  "name": "implicit-association-test-maker",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "npx wrangler d1 migrations apply iat-maker --local && react-router dev",
+    "build": "react-router build",
+    "deploy": "npx wrangler d1 migrations apply iat-maker --remote && wrangler deploy",
+    "typecheck": "react-router typegen && tsc"
+  },
+  "dependencies": {
+    "@cloudflare/vite-plugin": "latest",
+    "@react-router/cloudflare": "latest",
+    "@react-router/node": "latest",
+    "@react-router/serve": "latest",
+    "isbot": "latest",
+    "react": "latest",
+    "react-dom": "latest",
+    "react-router": "latest"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "latest",
+    "@react-router/dev": "latest",
+    "@types/node": "latest",
+    "@types/react": "latest",
+    "@types/react-dom": "latest",
+    "typescript": "latest",
+    "vite": "latest",
+    "wrangler": "latest"
+  }
+}
