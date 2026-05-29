@@ -23,13 +23,14 @@ export default function ResultsRoute() {
   return (
     <main className="shell">
       <section className="topbar">
-        <div>
+        <div className="topbar-title">
           <p className="eyebrow">Results</p>
           <h1>{test.name}</h1>
         </div>
         <div className="top-actions">
-          <Link className="button secondary" to="/">All tests</Link>
-          <Link className="button primary" to={`/tests/${test.id}`}>Run again</Link>
+          <Link className="button secondary" to="/">Saved tests</Link>
+          <Link className="button secondary" to={`/create?clone=${test.id}`}>Copy</Link>
+          <Link className="button primary" to={`/tests/${test.id}`}>Run</Link>
         </div>
       </section>
 

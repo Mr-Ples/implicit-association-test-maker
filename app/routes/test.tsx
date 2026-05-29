@@ -1,4 +1,4 @@
-import { Form, Link, redirect, useLoaderData } from "react-router";
+import { Form, Link, redirect, useLoaderData, useLocation } from "react-router";
 import { useEffect, useRef, useState } from "react";
 import type { Route } from "./+types/test";
 import { getTest, saveResponse } from "~/lib/db.server";
@@ -23,6 +23,7 @@ export async function action({ request, params, context }: Route.ActionArgs) {
 
 export default function TestRoute() {
   const { test } = useLoaderData<typeof loader>();
+  const location = useLocation();
   const [phase, setPhase] = useState<"questionnaire" | "instructions" | "task" | "complete">("questionnaire");
   const [participantId] = useState(() => crypto.randomUUID());
   const [answers, setAnswers] = useState<Record<string, string>>({});
@@ -34,6 +35,14 @@ export default function TestRoute() {
   const acceptingResponse = useRef(true);
   const current = plan[index];
   const progress = plan.length ? Math.round((index / plan.length) * 100) : 0;
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const url = new URL(window.location.href);
+    if (url.searchParams.get("created") === "1") {
+      window.localStorage.removeItem("iat-maker:draft:v1");
+    }
+  }, [location.key]);
 
   useEffect(() => {
     if (phase === "task") {
@@ -80,10 +89,18 @@ export default function TestRoute() {
   if (phase === "questionnaire") {
     return (
       <main className="shell narrow">
-        <Link className="back-link" to="/">Back to tests</Link>
+        <section className="topbar">
+          <div className="topbar-title">
+            <p className="eyebrow">Run test</p>
+            <h1>{test.name}</h1>
+          </div>
+          <div className="top-actions">
+            <Link className="button secondary" to="/">Saved tests</Link>
+          </div>
+        </section>
         <section className="take-card">
           <p className="eyebrow">Questionnaire</p>
-          <h1>{test.name}</h1>
+          <h2>Questionnaire</h2>
           <p>{test.description}</p>
           <form
             className="builder-form"
@@ -124,9 +141,18 @@ export default function TestRoute() {
   if (phase === "instructions") {
     return (
       <main className="shell narrow">
+        <section className="topbar">
+          <div className="topbar-title">
+            <p className="eyebrow">Run test</p>
+            <h1>{test.name}</h1>
+          </div>
+          <div className="top-actions">
+            <Link className="button secondary" to="/">Saved tests</Link>
+          </div>
+        </section>
         <section className="take-card">
           <p className="eyebrow">Task instructions</p>
-          <h1>{test.name}</h1>
+          <h2>Task instructions</h2>
           <p>Classify each item as quickly and accurately as possible. Use E for the left side and I for the right side.</p>
           <div className="instruction-grid">
             <div><strong>Left key</strong><span>E</span></div>
@@ -141,8 +167,17 @@ export default function TestRoute() {
   if (phase === "complete") {
     return (
       <main className="shell narrow">
+        <section className="topbar">
+          <div className="topbar-title">
+            <p className="eyebrow">Run test</p>
+            <h1>{test.name}</h1>
+          </div>
+          <div className="top-actions">
+            <Link className="button secondary" to="/">Saved tests</Link>
+          </div>
+        </section>
         <section className="take-card">
-          <h1>Submit response</h1>
+          <h2>Submit response</h2>
           <p>Your trial data is ready to save with the questionnaire answers.</p>
           <Form method="post">
             <input type="hidden" name="participantId" value={participantId} />

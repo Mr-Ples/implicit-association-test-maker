@@ -1,6 +1,6 @@
 # Implicit Association Test Maker
 
-Full-stack React Router v7 app for creating, running, saving, and analyzing Implicit Association Tests on Cloudflare Workers with D1.
+Full-stack React Router v7 app for creating, running, saving, and analyzing Implicit Association Tests on the edge with SQLite-backed storage.
 
 ## Setup
 
@@ -10,7 +10,7 @@ Full-stack React Router v7 app for creating, running, saving, and analyzing Impl
    npm install
    ```
 
-2. Create the D1 database:
+2. Create the database:
 
    ```bash
    npx wrangler d1 create iat-maker

@@ -15,8 +15,8 @@ export function defaultDefinition(): TestDefinition {
     description: "",
     conceptA: { label: "Concept A", items: ["Alpha", "Beta"] },
     conceptB: { label: "Concept B", items: ["Gamma", "Delta"] },
-    attributeA: { label: "Attribute A", items: ["Good", "Joy"] },
-    attributeB: { label: "Attribute B", items: ["Bad", "Pain"] },
+    attributeA: { label: "Good", items: ["Good", "Joy", "Excellent", "Positive", "Nice", "Great", "Love", "Like", "Happy", "Pleasant"] },
+    attributeB: { label: "Bad", items: ["Bad", "Pain", "Negative", "Awful", "Unpleasant", "Terrible", "Hate", "Dislike", "Sad", "Depressed"] },
     questionnaire: [
       {
         id: crypto.randomUUID(),
