@@ -9,7 +9,10 @@ import type { ReactNode } from "react";
 import stylesheet from "./styles/app.css?url";
 
 export function links() {
-  return [{ rel: "stylesheet", href: stylesheet }];
+  return [
+    { rel: "stylesheet", href: stylesheet },
+    { rel: "icon", type: "image/svg+xml", href: "/favicon.svg" },
+  ];
 }
 
 export function meta() {
