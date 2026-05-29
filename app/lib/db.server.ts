@@ -1,5 +1,5 @@
 import { scoreTrials } from "./iat";
-import type { ResponseRecord, TestDefinition, TestRecord, Trial } from "./types";
+import type { PilotFeedback, PilotSessionRecord, ResponseRecord, TestDefinition, TestRecord, Trial } from "./types";
 
 type TestRow = {
   id: string;
@@ -16,6 +16,17 @@ type ResponseRow = {
   questionnaire_json: string;
   trials_json: string;
   score_json: string;
+  created_at: string;
+};
+
+type PilotSessionRow = {
+  id: string;
+  test_id: string;
+  participant_id: string;
+  questionnaire_json: string;
+  trials_json: string;
+  score_json: string;
+  feedback_json: string;
   created_at: string;
 };
 
@@ -91,6 +102,33 @@ export async function saveResponse(
   return { responseId, score };
 }
 
+export async function savePilotSession(
+  db: D1Database,
+  testId: string,
+  participantId: string,
+  questionnaire: Record<string, string>,
+  trials: Trial[],
+  feedback: PilotFeedback,
+) {
+  const score = scoreTrials(trials);
+  const sessionId = crypto.randomUUID();
+  await db
+    .prepare(
+      "INSERT INTO pilot_sessions (id, test_id, participant_id, questionnaire_json, trials_json, score_json, feedback_json) VALUES (?, ?, ?, ?, ?, ?, ?)",
+    )
+    .bind(
+      sessionId,
+      testId,
+      participantId,
+      JSON.stringify(questionnaire),
+      JSON.stringify(trials),
+      JSON.stringify(score),
+      JSON.stringify(feedback),
+    )
+    .run();
+  return { sessionId, score };
+}
+
 export async function getResponse(db: D1Database, id: string): Promise<ResponseRecord | null> {
   const row = await db.prepare("SELECT * FROM responses WHERE id = ?").bind(id).first<ResponseRow>();
   return row ? mapResponse(row) : null;
@@ -105,6 +143,20 @@ export async function listResponsesForTest(db: D1Database, testId: string): Prom
   return (rows.results ?? []).map(mapResponse);
 }
 
+export async function getPilotSession(db: D1Database, id: string): Promise<PilotSessionRecord | null> {
+  const row = await db.prepare("SELECT * FROM pilot_sessions WHERE id = ?").bind(id).first<PilotSessionRow>();
+  return row ? mapPilotSession(row) : null;
+}
+
+export async function listPilotSessionsForTest(db: D1Database, testId: string): Promise<PilotSessionRecord[]> {
+  const rows = await db
+    .prepare("SELECT * FROM pilot_sessions WHERE test_id = ? ORDER BY created_at DESC")
+    .bind(testId)
+    .all<PilotSessionRow>();
+
+  return (rows.results ?? []).map(mapPilotSession);
+}
+
 function mapResponse(row: ResponseRow): ResponseRecord {
   return {
     id: row.id,
@@ -113,6 +165,19 @@ function mapResponse(row: ResponseRow): ResponseRecord {
     questionnaire: JSON.parse(row.questionnaire_json) as Record<string, string>,
     trials: JSON.parse(row.trials_json) as Trial[],
     score: JSON.parse(row.score_json) as ReturnType<typeof scoreTrials>,
+    createdAt: row.created_at,
+  };
+}
+
+function mapPilotSession(row: PilotSessionRow): PilotSessionRecord {
+  return {
+    id: row.id,
+    testId: row.test_id,
+    participantId: row.participant_id,
+    questionnaire: JSON.parse(row.questionnaire_json) as Record<string, string>,
+    trials: JSON.parse(row.trials_json) as Trial[],
+    score: JSON.parse(row.score_json) as ReturnType<typeof scoreTrials>,
+    feedback: JSON.parse(row.feedback_json) as PilotFeedback,
     createdAt: row.created_at,
   };
 }

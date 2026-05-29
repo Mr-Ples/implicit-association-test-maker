@@ -1,6 +1,6 @@
 import { Link, useLoaderData } from "react-router";
 import type { Route } from "./+types/results";
-import { getResponse, getTest, listResponsesForTest } from "~/lib/db.server";
+import { getPilotSession, getResponse, getTest, listPilotSessionsForTest, listResponsesForTest } from "~/lib/db.server";
 
 export async function loader({ request, params, context }: Route.LoaderArgs) {
   const url = new URL(request.url);
@@ -8,17 +8,21 @@ export async function loader({ request, params, context }: Route.LoaderArgs) {
   if (!test) throw new Response("Not found", { status: 404 });
 
   const responses = await listResponsesForTest(context.cloudflare.env.DB, params.testId);
+  const pilotSessions = await listPilotSessionsForTest(context.cloudflare.env.DB, params.testId);
   const currentResponseId = url.searchParams.get("response");
   const foundResponse = currentResponseId ? await getResponse(context.cloudflare.env.DB, currentResponseId) : null;
+  const currentPilotSessionId = url.searchParams.get("pilot");
+  const foundPilotSession = currentPilotSessionId ? await getPilotSession(context.cloudflare.env.DB, currentPilotSessionId) : null;
   const currentResponse = foundResponse?.testId === params.testId ? foundResponse : responses[0] ?? null;
+  const currentPilotSession = foundPilotSession?.testId === params.testId ? foundPilotSession : pilotSessions[0] ?? null;
   const scores = responses.map((response) => response.score.dScore).filter((score): score is number => typeof score === "number");
   const average = scores.length ? scores.reduce((total, score) => total + score, 0) / scores.length : null;
 
-  return { test, responses, currentResponse, scores, average };
+  return { test, responses, pilotSessions, currentResponse, currentPilotSession, scores, average };
 }
 
 export default function ResultsRoute() {
-  const { test, responses, currentResponse, scores, average } = useLoaderData<typeof loader>();
+  const { test, responses, pilotSessions, currentResponse, currentPilotSession, scores, average } = useLoaderData<typeof loader>();
 
   return (
     <main className="shell">
@@ -30,6 +34,7 @@ export default function ResultsRoute() {
         <div className="top-actions">
           <Link className="button secondary" to="/">Saved tests</Link>
           <Link className="button secondary" to={`/create?clone=${test.id}`}>Copy</Link>
+          <Link className="button secondary" to={`/tests/${test.id}?mode=pilot`}>Pilot</Link>
           <Link className="button primary" to={`/tests/${test.id}`}>Run</Link>
         </div>
       </section>
@@ -69,6 +74,35 @@ export default function ResultsRoute() {
           <Distribution scores={scores} />
           <p>{responses.length} total responses, {scores.length} scorable.</p>
         </article>
+
+        <article className="result-panel">
+          <h2>Pilot review</h2>
+          {currentPilotSession ? (
+            <>
+              <div className="score-display">
+                <span>Pilot D-score</span>
+                <strong>{currentPilotSession.score.dScore === null ? "n/a" : currentPilotSession.score.dScore.toFixed(3)}</strong>
+              </div>
+              <p>{currentPilotSession.score.interpretation}</p>
+              <dl>
+                <div><dt>Compatible mean</dt><dd>{formatMs(currentPilotSession.score.compatibleMeanMs)}</dd></div>
+                <div><dt>Incompatible mean</dt><dd>{formatMs(currentPilotSession.score.incompatibleMeanMs)}</dd></div>
+                <div><dt>Error rate</dt><dd>{formatPercent(currentPilotSession.score.errorRate)}</dd></div>
+                <div><dt>Fast-response rate</dt><dd>{formatPercent(currentPilotSession.score.fastRate)}</dd></div>
+              </dl>
+              <div className="pilot-notes">
+                <h3>Confusing items</h3>
+                <p>{currentPilotSession.feedback.confusingItems.length ? currentPilotSession.feedback.confusingItems.join(", ") : "None recorded"}</p>
+                <h3>Hesitant items</h3>
+                <p>{currentPilotSession.feedback.hesitantItems.length ? currentPilotSession.feedback.hesitantItems.join(", ") : "None recorded"}</p>
+                <h3>Other notes</h3>
+                <p>{currentPilotSession.feedback.notes || "None recorded"}</p>
+              </div>
+            </>
+          ) : (
+            <p className="empty">Run a pilot to capture confusing items and hesitation notes.</p>
+          )}
+        </article>
       </section>
 
       <section className="saved">
@@ -85,6 +119,23 @@ export default function ResultsRoute() {
               <span>{response.score.valid ? "Valid" : "Flagged"}</span>
             </Link>
           ))}
+        </div>
+      </section>
+
+      <section className="saved">
+        <div className="section-heading">
+          <h2>Pilot log</h2>
+          <p>These pilot runs stay separate from scored responses so you can revise the study before fielding it.</p>
+        </div>
+        <div className="response-table">
+          <div className="table-row head"><span>Created</span><span>D-score</span><span>Notes</span></div>
+          {pilotSessions.length ? pilotSessions.map((session) => (
+            <Link className="table-row" to={`/tests/${test.id}/results?pilot=${session.id}`} key={session.id}>
+              <span>{new Date(session.createdAt).toLocaleString()}</span>
+              <span>{session.score.dScore === null ? "n/a" : session.score.dScore.toFixed(3)}</span>
+              <span>{session.feedback.confusingItems.length || session.feedback.hesitantItems.length || session.feedback.notes.trim() ? "Review needed" : "Clean"}</span>
+            </Link>
+          )) : <p className="empty">No pilot runs saved yet.</p>}
         </div>
       </section>
     </main>

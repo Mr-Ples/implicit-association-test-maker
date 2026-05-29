@@ -39,6 +39,7 @@ export default function Home() {
               </div>
               <div className="card-actions">
                 <Link className="button secondary" to={`/tests/${test.id}`}>Run</Link>
+                <Link className="button secondary" to={`/tests/${test.id}?mode=pilot`}>Pilot</Link>
                 <Link className="button secondary" to={`/tests/${test.id}/results`}>Results</Link>
                 <Link className="button secondary" to={`/create?clone=${test.id}`}>Copy</Link>
               </div>

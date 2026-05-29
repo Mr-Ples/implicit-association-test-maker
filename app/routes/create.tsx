@@ -5,7 +5,7 @@ import { createTest, getTest } from "~/lib/db.server";
 import { defaultDefinition, normalizeDefinition } from "~/lib/iat";
 import type { QuestionnaireQuestion, TestDefinition } from "~/lib/types";
 
-const DRAFT_KEY = "iat-maker:draft:v1";
+type StimulusText = Record<"conceptA" | "conceptB" | "attributeA" | "attributeB", string>;
 
 export async function loader({ request, context }: Route.LoaderArgs) {
   const url = new URL(request.url);
@@ -21,7 +21,7 @@ export async function action({ request, context }: Route.ActionArgs) {
   try {
     const definition = normalizeDefinition(JSON.parse(String(rawDefinition ?? "{}")));
     const id = await createTest(context.cloudflare.env.DB, definition);
-    return redirect(`/tests/${id}?created=1`);
+    return redirect(`/tests/${id}`);
   } catch (error) {
     return {
       error: error instanceof Error ? error.message : "The test definition could not be saved.",
@@ -42,39 +42,22 @@ export default function CreateRoute() {
   const [definition, setDefinition] = useState<TestDefinition>(() => {
     return initialDefinition;
   });
-  const [stimulusText, setStimulusText] = useState<Record<string, string>>(() => toStimulusText(initialDefinition));
+  const [stimulusText, setStimulusText] = useState<StimulusText>(() => toStimulusText(initialDefinition));
   const [error, setError] = useState<string | null>(null);
-  const [hydrated, setHydrated] = useState(false);
+  const [dirty, setDirty] = useState(false);
   const definitionJson = useMemo(() => JSON.stringify(definition), [definition]);
 
   useEffect(() => {
-    if (clone || typeof window === "undefined") {
-      setHydrated(true);
-      return;
-    }
+    if (!dirty || typeof window === "undefined") return;
 
-    const raw = window.localStorage.getItem(DRAFT_KEY);
-    if (raw) {
-      try {
-        const parsed = JSON.parse(raw) as { step?: 1 | 2; definition?: TestDefinition };
-        if (parsed.definition) setDefinition(parsed.definition);
-        if (parsed.definition) setStimulusText(toStimulusText(parsed.definition));
-        if (parsed.step === 1 || parsed.step === 2) setStep(parsed.step);
-      } catch {
-        // Ignore malformed cached drafts and fall back to the current state.
-      }
-    }
+    const onBeforeUnload = (event: BeforeUnloadEvent) => {
+      event.preventDefault();
+      event.returnValue = "";
+    };
 
-    setHydrated(true);
-  }, [clone]);
-
-  useEffect(() => {
-    if (!hydrated || typeof window === "undefined") return;
-    const timer = window.setTimeout(() => {
-      window.localStorage.setItem(DRAFT_KEY, JSON.stringify({ step, definition, stimulusText }));
-    }, 120);
-    return () => window.clearTimeout(timer);
-  }, [definition, step, hydrated, stimulusText]);
+    window.addEventListener("beforeunload", onBeforeUnload);
+    return () => window.removeEventListener("beforeunload", onBeforeUnload);
+  }, [dirty]);
 
   function goNext() {
     try {
@@ -85,6 +68,7 @@ export default function CreateRoute() {
         attributeA: { ...definition.attributeA, items: parseStimulusText(stimulusText.attributeA) },
         attributeB: { ...definition.attributeB, items: parseStimulusText(stimulusText.attributeB) },
       });
+      setDirty(true);
       setDefinition(normalized);
       setStimulusText(toStimulusText(normalized));
       setError(null);
@@ -100,11 +84,11 @@ export default function CreateRoute() {
   }
 
   function clearDraft() {
-    window.localStorage.removeItem(DRAFT_KEY);
     setError(null);
     setStep(1);
     setDefinition(initialDefinition);
     setStimulusText(toStimulusText(initialDefinition));
+    setDirty(false);
   }
 
   return (
@@ -151,7 +135,10 @@ export default function CreateRoute() {
                 Test name
                 <input
                   value={definition.name}
-                  onChange={(event) => setDefinition({ ...definition, name: event.target.value })}
+                  onChange={(event) => {
+                    setDirty(true);
+                    setDefinition({ ...definition, name: event.target.value });
+                  }}
                   placeholder="e.g. Career and family associations"
                 />
               </label>
@@ -159,7 +146,10 @@ export default function CreateRoute() {
                 Short description
                 <textarea
                   value={definition.description}
-                  onChange={(event) => setDefinition({ ...definition, description: event.target.value })}
+                  onChange={(event) => {
+                    setDirty(true);
+                    setDefinition({ ...definition, description: event.target.value });
+                  }}
                   placeholder="Optional study note"
                 />
               </label>
@@ -173,12 +163,13 @@ export default function CreateRoute() {
                       Label
                       <input
                         value={definition[key].label}
-                        onChange={(event) =>
+                        onChange={(event) => {
+                          setDirty(true);
                           setDefinition({
                             ...definition,
                             [key]: { ...definition[key], label: event.target.value },
-                          })
-                        }
+                          });
+                        }}
                       />
                     </label>
                     <label>
@@ -186,12 +177,13 @@ export default function CreateRoute() {
                       <textarea
                         className="stimuli-box"
                         value={stimulusText[key]}
-                        onChange={(event) =>
+                        onChange={(event) => {
+                          setDirty(true);
                           setStimulusText({
                             ...stimulusText,
                             [key]: event.target.value,
-                          })
-                        }
+                          });
+                        }}
                       />
                     </label>
                   </fieldset>
@@ -200,7 +192,7 @@ export default function CreateRoute() {
             </div>
 
             <div className="wizard-actions">
-              <button className="button secondary" type="button" onClick={clearDraft}>Clear draft</button>
+              <button className="button secondary" type="button" onClick={clearDraft}>Reset form</button>
               <button className="button primary" type="button" onClick={goNext}>Next</button>
             </div>
           </section>
@@ -219,7 +211,7 @@ export default function CreateRoute() {
             <Form method="post" className="builder-form">
               <input type="hidden" name="definition" value={definitionJson} />
 
-              <QuestionnaireEditor definition={definition} setDefinition={setDefinition} />
+              <QuestionnaireEditor definition={definition} setDefinition={setDefinition} markDirty={() => setDirty(true)} />
 
               <div className="wizard-actions">
                 <button className="button secondary" type="button" onClick={goBack}>Back</button>
@@ -236,11 +228,14 @@ export default function CreateRoute() {
 function QuestionnaireEditor({
   definition,
   setDefinition,
+  markDirty,
 }: {
   definition: TestDefinition;
   setDefinition: (definition: TestDefinition) => void;
+  markDirty: () => void;
 }) {
   function updateQuestion(id: string, patch: Partial<QuestionnaireQuestion>) {
+    markDirty();
     setDefinition({
       ...definition,
       questionnaire: definition.questionnaire.map((question) =>
@@ -259,15 +254,16 @@ function QuestionnaireEditor({
         <button
           className="button secondary"
           type="button"
-          onClick={() =>
+          onClick={() => {
+            markDirty();
             setDefinition({
               ...definition,
               questionnaire: [
                 ...definition.questionnaire,
                 { id: crypto.randomUUID(), prompt: "", type: "text", options: [], required: false },
               ],
-            })
-          }
+            });
+          }}
         >
           Add question
         </button>
@@ -321,12 +317,13 @@ function QuestionnaireEditor({
           <button
             className="button danger"
             type="button"
-            onClick={() =>
+            onClick={() => {
+              markDirty();
               setDefinition({
                 ...definition,
                 questionnaire: definition.questionnaire.filter((item) => item.id !== question.id),
-              })
-            }
+              });
+            }}
           >
             Remove
           </button>

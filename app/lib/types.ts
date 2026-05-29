@@ -70,3 +70,20 @@ export interface ResponseRecord {
   score: ScoreResult;
   createdAt: string;
 }
+
+export interface PilotFeedback {
+  confusingItems: string[];
+  hesitantItems: string[];
+  notes: string;
+}
+
+export interface PilotSessionRecord {
+  id: string;
+  testId: string;
+  participantId: string;
+  questionnaire: Record<string, string>;
+  trials: Trial[];
+  score: ScoreResult;
+  feedback: PilotFeedback;
+  createdAt: string;
+}

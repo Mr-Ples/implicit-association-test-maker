@@ -25,7 +25,8 @@ export default function AboutRoute() {
           <h2>What this app stores</h2>
           <p>
             Each study saves the test definition, the questionnaire, trial-by-trial responses, latencies, correctness,
-            and a computed D-score for aggregate analysis.
+            and a computed D-score for aggregate analysis. Pilot runs stay separate and add review notes for confusing,
+            double-meaning, or hesitation-prone items.
           </p>
         </article>
         <article className="about-card">

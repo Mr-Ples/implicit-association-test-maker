@@ -1,7 +1,7 @@
 import { Form, Link, redirect, useLoaderData, useLocation } from "react-router";
 import { useEffect, useRef, useState } from "react";
 import type { Route } from "./+types/test";
-import { getTest, saveResponse } from "~/lib/db.server";
+import { getTest, savePilotSession, saveResponse } from "~/lib/db.server";
 import { createTrialPlan } from "~/lib/iat";
 import type { Side, Trial } from "~/lib/types";
 
@@ -13,10 +13,23 @@ export async function loader({ params, context }: Route.LoaderArgs) {
 
 export async function action({ request, params, context }: Route.ActionArgs) {
   if (!params.testId) throw new Response("Missing test id", { status: 400 });
+
+  const url = new URL(request.url);
   const formData = await request.formData();
   const participantId = String(formData.get("participantId") || crypto.randomUUID());
   const questionnaire = JSON.parse(String(formData.get("questionnaire") || "{}")) as Record<string, string>;
   const trials = JSON.parse(String(formData.get("trials") || "[]")) as Trial[];
+
+  if (url.searchParams.get("mode") === "pilot") {
+    const feedback = {
+      confusingItems: parseLines(String(formData.get("confusingItems") || "")),
+      hesitantItems: parseLines(String(formData.get("hesitantItems") || "")),
+      notes: String(formData.get("notes") || "").trim(),
+    };
+    const result = await savePilotSession(context.cloudflare.env.DB, params.testId, participantId, questionnaire, trials, feedback);
+    return redirect(`/tests/${params.testId}/results?pilot=${result.sessionId}`);
+  }
+
   const result = await saveResponse(context.cloudflare.env.DB, params.testId, participantId, questionnaire, trials);
   return redirect(`/tests/${params.testId}/results?response=${result.responseId}`);
 }
@@ -24,32 +37,23 @@ export async function action({ request, params, context }: Route.ActionArgs) {
 export default function TestRoute() {
   const { test } = useLoaderData<typeof loader>();
   const location = useLocation();
-  const [phase, setPhase] = useState<"questionnaire" | "instructions" | "task" | "complete">("questionnaire");
+  const pilotMode = new URLSearchParams(location.search).get("mode") === "pilot";
+  const [phase, setPhase] = useState<"questionnaire" | "instructions" | "task" | "complete" | "pilot">("questionnaire");
   const [participantId] = useState(() => crypto.randomUUID());
   const [answers, setAnswers] = useState<Record<string, string>>({});
   const [plan, setPlan] = useState<ReturnType<typeof createTrialPlan>>([]);
   const [index, setIndex] = useState(0);
   const [trials, setTrials] = useState<Trial[]>([]);
   const [feedback, setFeedback] = useState<"correct" | "wrong" | null>(null);
+  const [pilotNotes, setPilotNotes] = useState({
+    confusingItems: "",
+    hesitantItems: "",
+    notes: "",
+  });
   const startedAt = useRef<number>(0);
   const acceptingResponse = useRef(true);
   const current = plan[index];
   const progress = plan.length ? Math.round((index / plan.length) * 100) : 0;
-
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-    const url = new URL(window.location.href);
-    if (url.searchParams.get("created") === "1") {
-      window.localStorage.removeItem("iat-maker:draft:v1");
-    }
-  }, [location.key]);
-
-  useEffect(() => {
-    if (phase === "task") {
-      startedAt.current = performance.now();
-      acceptingResponse.current = true;
-    }
-  }, [phase, index]);
 
   useEffect(() => {
     function onKeyDown(event: KeyboardEvent) {
@@ -62,10 +66,18 @@ export default function TestRoute() {
     return () => window.removeEventListener("keydown", onKeyDown);
   });
 
+  useEffect(() => {
+    if (phase === "task") {
+      startedAt.current = performance.now();
+      acceptingResponse.current = true;
+    }
+  }, [phase, index]);
+
   function startTask() {
     setPlan(createTrialPlan(test.definition));
     setIndex(0);
     setTrials([]);
+    setFeedback(null);
     setPhase("task");
   }
 
@@ -79,7 +91,7 @@ export default function TestRoute() {
     window.setTimeout(() => {
       setFeedback(null);
       if (index + 1 >= plan.length) {
-        setPhase("complete");
+        setPhase(pilotMode ? "pilot" : "complete");
       } else {
         setIndex(index + 1);
       }
@@ -96,6 +108,7 @@ export default function TestRoute() {
           </div>
           <div className="top-actions">
             <Link className="button secondary" to="/">Saved tests</Link>
+            <Link className="button secondary" to={`/tests/${test.id}?mode=pilot`}>Pilot test</Link>
           </div>
         </section>
         <section className="take-card">
@@ -148,6 +161,7 @@ export default function TestRoute() {
           </div>
           <div className="top-actions">
             <Link className="button secondary" to="/">Saved tests</Link>
+            <Link className="button secondary" to={`/tests/${test.id}?mode=pilot`}>Pilot test</Link>
           </div>
         </section>
         <section className="take-card">
@@ -174,6 +188,7 @@ export default function TestRoute() {
           </div>
           <div className="top-actions">
             <Link className="button secondary" to="/">Saved tests</Link>
+            <Link className="button secondary" to={`/tests/${test.id}?mode=pilot`}>Pilot test</Link>
           </div>
         </section>
         <section className="take-card">
@@ -190,20 +205,121 @@ export default function TestRoute() {
     );
   }
 
+  if (phase === "task") {
+    return (
+      <main className="task-screen">
+        <div className="task-top">
+          <div className="side-label"><kbd>E</kbd><strong>{current?.leftLabel}</strong></div>
+          <div className="progress"><span style={{ width: `${progress}%` }} /></div>
+          <div className="side-label right"><strong>{current?.rightLabel}</strong><kbd>I</kbd></div>
+        </div>
+        <button className="hit-area left" type="button" aria-label="left response" onClick={() => respond("left")} />
+        <button className="hit-area right" type="button" aria-label="right response" onClick={() => respond("right")} />
+        <div className="stimulus">
+          <span>{current?.stimulus}</span>
+          {feedback === "wrong" ? <strong className="feedback">X</strong> : null}
+        </div>
+        <div className="block-label">Block {current?.block} of 7</div>
+      </main>
+    );
+  }
+
+  const summary = summarizeTrials(trials);
+  const slowTrials = [...trials]
+    .sort((a, b) => b.latencyMs - a.latencyMs)
+    .slice(0, 6);
+  const errorTrials = trials.filter((trial) => !trial.correct);
+
   return (
-    <main className="task-screen">
-      <div className="task-top">
-        <div className="side-label"><kbd>E</kbd><strong>{current?.leftLabel}</strong></div>
-        <div className="progress"><span style={{ width: `${progress}%` }} /></div>
-        <div className="side-label right"><strong>{current?.rightLabel}</strong><kbd>I</kbd></div>
-      </div>
-      <button className="hit-area left" type="button" aria-label="left response" onClick={() => respond("left")} />
-      <button className="hit-area right" type="button" aria-label="right response" onClick={() => respond("right")} />
-      <div className="stimulus">
-        <span>{current?.stimulus}</span>
-        {feedback === "wrong" ? <strong className="feedback">X</strong> : null}
-      </div>
-      <div className="block-label">Block {current?.block} of 7</div>
+    <main className="shell narrow">
+      <section className="topbar">
+        <div className="topbar-title">
+          <p className="eyebrow">Pilot test</p>
+          <h1>{test.name}</h1>
+        </div>
+        <div className="top-actions">
+          <Link className="button secondary" to="/">Saved tests</Link>
+          <Link className="button secondary" to={`/tests/${test.id}`}>Standard run</Link>
+        </div>
+      </section>
+      <section className="take-card pilot-review">
+        <p className="eyebrow">Pilot review</p>
+        <h2>Review the problem items</h2>
+        <p>
+          This pilot run highlights long latencies and errors so you can catch confusing labels, double meanings, or
+          items that made people hesitate.
+        </p>
+        <div className="pilot-summary">
+          <div><strong>{formatPercent(summary.errorRate)}</strong><span>Error rate</span></div>
+          <div><strong>{formatPercent(summary.fastRate)}</strong><span>Fast-response rate</span></div>
+          <div><strong>{slowTrials.length}</strong><span>Slow items flagged</span></div>
+          <div><strong>{errorTrials.length}</strong><span>Wrong responses</span></div>
+        </div>
+        {slowTrials.length ? (
+          <div className="pilot-list">
+            <h3>Slowest items</h3>
+            {slowTrials.map((trial) => (
+              <div className="pilot-item" key={`${trial.block}-${trial.stimulus}-${trial.latencyMs}`}>
+                <strong>{trial.stimulus}</strong>
+                <span>{trial.latencyMs} ms{trial.correct ? "" : " • wrong response"}</span>
+              </div>
+            ))}
+          </div>
+        ) : null}
+        <Form method="post" action={`${location.pathname}?mode=pilot`} className="builder-form">
+          <input type="hidden" name="participantId" value={participantId} />
+          <input type="hidden" name="questionnaire" value={JSON.stringify(answers)} />
+          <input type="hidden" name="trials" value={JSON.stringify(trials)} />
+          <label>
+            Confusing or double-meaning words
+            <textarea
+              name="confusingItems"
+              value={pilotNotes.confusingItems}
+              onChange={(event) => setPilotNotes({ ...pilotNotes, confusingItems: event.target.value })}
+              placeholder="List words or items that felt ambiguous, unclear, or hard to place."
+            />
+          </label>
+          <label>
+            Words that made you hesitate
+            <textarea
+              name="hesitantItems"
+              value={pilotNotes.hesitantItems}
+              onChange={(event) => setPilotNotes({ ...pilotNotes, hesitantItems: event.target.value })}
+              placeholder="List items where you slowed down, second-guessed, or paused."
+            />
+          </label>
+          <label>
+            Other notes
+            <textarea
+              name="notes"
+              value={pilotNotes.notes}
+              onChange={(event) => setPilotNotes({ ...pilotNotes, notes: event.target.value })}
+              placeholder="Anything else the pilot exposed."
+            />
+          </label>
+          <button className="button primary" type="submit">Save pilot</button>
+        </Form>
+      </section>
     </main>
   );
+}
+
+function summarizeTrials(trials: Trial[]) {
+  const usable = trials.filter((trial) => trial.condition === "compatible" || trial.condition === "incompatible");
+  const fastCount = usable.filter((trial) => trial.latencyMs < 300).length;
+  return {
+    errorRate: usable.length ? usable.filter((trial) => !trial.correct).length / usable.length : 0,
+    fastRate: usable.length ? fastCount / usable.length : 0,
+  };
+}
+
+function parseLines(value: string) {
+  return value
+    .split("\n")
+    .map((item) => item.trim())
+    .filter(Boolean);
+}
+
+function formatPercent(value: number) {
+  return `${Math.round(value * 100)}%`;
 }

@@ -1,6 +1,6 @@
 # Implicit Association Test Maker
 
-Full-stack React Router v7 app for creating, running, saving, and analyzing Implicit Association Tests on the edge with SQLite-backed storage.
+An Implicit Association Test measures how quickly someone sorts words or images when two concepts are paired together. Faster responses in one pairing than another are interpreted as a relative association strength. 
 
 ## Setup
 
@@ -51,6 +51,7 @@ The app stores each participant's questionnaire answers, trial-level responses, 
 
 Positive D-scores indicate faster compatible-pair classifications than incompatible-pair classifications for the configured category order.
 
+## Existing IAT predictive validity
 
 | IAT domain                 |                         Predicted outcome | Typical association | Approx. Cohen’s d | Interpretation               | What it means in practice                                                                                                                                                                                       |
 | -------------------------- | ----------------------------------------: | ------------------: | ----------------: | ---------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |

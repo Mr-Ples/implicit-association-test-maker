@@ -601,8 +601,80 @@ kbd {
 
 .results-grid {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 24px;
+}
+
+.pilot-review {
+  display: grid;
+  gap: 18px;
+}
+
+.pilot-summary {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.pilot-summary div {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 12px 14px;
+  background: #fff;
+}
+
+.pilot-summary strong {
+  display: block;
+  font-size: 1.5rem;
+  line-height: 1.1;
+}
+
+.pilot-summary span {
+  display: block;
+  margin-top: 4px;
+  color: var(--muted);
+  font-size: 0.8rem;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.pilot-list {
+  display: grid;
+  gap: 10px;
+}
+
+.pilot-list h3,
+.pilot-notes h3 {
+  margin: 0;
+  font-size: 1rem;
+}
+
+.pilot-item {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 10px 12px;
+  background: #fff;
+}
+
+.pilot-item strong {
+  font-weight: 800;
+}
+
+.pilot-item span {
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+.pilot-notes {
+  display: grid;
+  gap: 8px;
+}
+
+.pilot-notes p {
+  margin: 0;
 }
 
 .score-display {
@@ -693,6 +765,7 @@ kbd {
   .category-grid,
   .results-grid,
   .info-grid,
+  .pilot-summary,
   .about-layout,
   .wizard-steps {
     grid-template-columns: 1fr;
@@ -726,6 +799,11 @@ kbd {
   .top-actions .button,
   .card-actions .button {
     width: 100%;
+  }
+
+  .pilot-item {
+    flex-direction: column;
+    align-items: flex-start;
   }
 
   .top-actions {
