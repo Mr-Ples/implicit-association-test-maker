@@ -185,7 +185,6 @@ export default function TestRoute() {
         </section>
         <section className="take-card">
           <p className="eyebrow">Task instructions</p>
-          <h2>Task instructions</h2>
           <p>
             Classify each item as quickly and accurately as possible. Use E for the left side and I for the right side.
             The first block starts with these words.
@@ -200,7 +199,9 @@ export default function TestRoute() {
               </div>
             ))}
           </div>
-          <button className="button primary" type="button" onClick={startTask}>Start test</button>
+          <div className="questionnaire-footer">
+            <button className="button primary" type="button" onClick={startTask}>Start test</button>
+          </div>
         </section>
       </main>
     );
