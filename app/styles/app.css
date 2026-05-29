@@ -377,6 +377,10 @@ dd {
   transition: border-color 160ms ease, box-shadow 160ms ease, transform 160ms ease;
 }
 
+.test-card:has(.more-menu-items) {
+  z-index: 10;
+}
+
 .test-card:hover {
   border-color: #b6c0ca;
   box-shadow: 0 20px 54px rgba(24, 36, 51, 0.14);
@@ -400,6 +404,31 @@ dd {
   color: var(--muted);
 }
 
+.test-card-description {
+  position: relative;
+  z-index: 3;
+  pointer-events: none;
+  line-height: 1.5;
+}
+
+.test-card-description a,
+.test-description a {
+  pointer-events: auto;
+  color: var(--primary);
+  font-weight: 900;
+  text-decoration: underline;
+  text-decoration-thickness: 2px;
+  text-underline-offset: 2px;
+  background: rgba(23, 107, 95, 0.1);
+  border-radius: 4px;
+  padding: 0 4px;
+}
+
+.test-card-description a {
+  position: relative;
+  z-index: 4;
+}
+
 .test-card span,
 .empty {
   color: var(--muted);
@@ -407,7 +436,8 @@ dd {
 
 .test-card-main {
   position: relative;
-  z-index: 1;
+  z-index: 3;
+  pointer-events: none;
 }
 
 .card-actions {

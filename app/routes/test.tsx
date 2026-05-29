@@ -5,6 +5,7 @@ import { getTest, savePilotSession, saveResponse } from "~/lib/db.server";
 import { buildPilotReview, createPilotTrialPlan, createTrialPlan, scorePilotTrials } from "~/lib/iat";
 import { HomeLink } from "~/components/icons";
 import type { Side, Trial } from "~/lib/types";
+import { renderLinkedText } from "~/components/linked-text";
 
 export async function loader({ params, context }: Route.LoaderArgs) {
   const test = await getTest(context.cloudflare.env.DB, params.testId);
@@ -127,7 +128,7 @@ export default function TestRoute() {
         <section className="take-card">
           <p className="eyebrow">Questionnaire</p>
           <h2>Questionnaire</h2>
-          <p>{test.description}</p>
+          <p className="test-description">{renderLinkedText(test.description)}</p>
           <form
             className="builder-form"
             onSubmit={(event) => {
@@ -195,7 +196,7 @@ export default function TestRoute() {
                 <strong>{instruction.side}</strong>
                 <span>{instruction.key}</span>
                 <b>{instruction.label}</b>
-                {/* <small className="instruction-words">{instruction.words.join(", ")}</small> */}
+                <small className="instruction-words">{instruction.words.join(", ")}</small>
               </div>
             ))}
           </div>

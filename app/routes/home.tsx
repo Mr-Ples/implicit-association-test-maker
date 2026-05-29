@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from "react";
 import type { Route } from "./+types/home";
 import { listTests } from "~/lib/db.server";
 import { MoreHorizontalIcon } from "~/components/icons";
+import { renderLinkedText } from "~/components/linked-text";
 
 export async function loader({ context }: Route.LoaderArgs) {
   return { tests: await listTests(context.cloudflare.env.DB) };
@@ -51,7 +52,7 @@ export default function Home() {
               <Link className="test-card-run-overlay" to={`/tests/${test.id}`} aria-label={`Run ${test.name}`} />
               <div className="test-card-main">
                 <h3>{test.name}</h3>
-                <p>{test.description || "No description"}</p>
+                <p className="test-card-description">{renderLinkedText(test.description || "No description")}</p>
                 <div className="meta-line">
                   <span>{test.responseCount} scored responses</span>
                   <span>{test.averageDScore === null ? "No D-score yet" : `Average D-score ${test.averageDScore.toFixed(3)}`}</span>
