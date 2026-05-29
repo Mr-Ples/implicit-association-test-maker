@@ -183,16 +183,6 @@ export default function CreateRoute() {
           </section>
         ) : (
           <section className="wizard-panel">
-            <div className="section-heading">
-              <h2>Questionnaire</h2>
-              <p>This appears before the test starts. Add as many questions as you need.</p>
-            </div>
-
-            <div className="info-box questionnaire-info">
-              <h3>Why this exists</h3>
-              <p>The questionnaire gives you participant context before the timed classification task begins.</p>
-            </div>
-
             <Form method="post" className="builder-form">
               <input type="hidden" name="definition" value={definitionJson} />
 
@@ -236,22 +226,6 @@ function QuestionnaireEditor({
           <h2>Questionnaire</h2>
           <p>These questions appear before the timed blocks.</p>
         </div>
-        <button
-          className="button secondary"
-          type="button"
-          onClick={() => {
-            markDirty();
-            setDefinition({
-              ...definition,
-              questionnaire: [
-                ...definition.questionnaire,
-                { id: crypto.randomUUID(), prompt: "", type: "text", options: [], required: false },
-              ],
-            });
-          }}
-        >
-          Add question
-        </button>
       </div>
 
       {definition.questionnaire.length ? definition.questionnaire.map((question, index) => {
@@ -298,7 +272,7 @@ function QuestionnaireEditor({
                   value={question.options.join("\n")}
                   onChange={(event) =>
                     updateQuestion(question.id, {
-                      options: event.target.value.split("\n").map((item) => item.trim()).filter(Boolean),
+                      options: event.target.value.split("\n").map((item) => item.trim()),
                     })
                   }
                 />
@@ -330,6 +304,25 @@ function QuestionnaireEditor({
           </fieldset>
         );
       }) : <p className="empty">Add at least one question if you want to screen or profile participants first.</p>}
+
+      <div className="questionnaire-footer">
+        <button
+          className="button secondary"
+          type="button"
+          onClick={() => {
+            markDirty();
+            setDefinition({
+              ...definition,
+              questionnaire: [
+                ...definition.questionnaire,
+                { id: crypto.randomUUID(), prompt: "", type: "text", options: [], required: false },
+              ],
+            });
+          }}
+        >
+          Add question
+        </button>
+      </div>
     </section>
   );
 }

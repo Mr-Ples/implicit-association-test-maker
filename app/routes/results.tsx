@@ -1,7 +1,7 @@
 import { Link, useLoaderData } from "react-router";
 import type { Route } from "./+types/results";
 import { getPilotSession, getResponse, getTest, listPilotSessionsForTest, listResponsesForTest } from "~/lib/db.server";
-import { summarizePilotItems } from "~/lib/iat";
+import { buildPilotReview } from "~/lib/iat";
 import { HomeLink } from "~/components/icons";
 
 export async function loader({ request, params, context }: Route.LoaderArgs) {
@@ -25,10 +25,8 @@ export async function loader({ request, params, context }: Route.LoaderArgs) {
 
 export default function ResultsRoute() {
   const { test, responses, pilotSessions, currentResponse, currentPilotSession, scores, average } = useLoaderData<typeof loader>();
-  const currentPilotItems = currentPilotSession ? summarizePilotItems(currentPilotSession.trials) : [];
-  const currentPilotErrorCount = currentPilotSession
-    ? currentPilotSession.trials.filter((trial) => !trial.correct).length
-    : 0;
+  const currentPilotReview = currentPilotSession ? buildPilotReview(currentPilotSession.trials, test.definition) : null;
+  const currentPilotErrorCount = currentPilotSession ? currentPilotSession.trials.filter((trial) => !trial.correct).length : 0;
 
   return (
     <main className="shell">
@@ -94,10 +92,10 @@ export default function ResultsRoute() {
                 <div><dt>Wrong responses</dt><dd>{currentPilotErrorCount}</dd></div>
                 <div><dt>Fast-response rate</dt><dd>{formatPercent(currentPilotSession.score.fastRate)}</dd></div>
               </dl>
-              {currentPilotItems.length ? (
+              {currentPilotReview?.slowestItems.length ? (
                 <div className="pilot-list">
-                  <h3>All words shown</h3>
-                  {currentPilotItems.map((item) => (
+                  <h3>Slowest words</h3>
+                  {currentPilotReview.slowestItems.map((item) => (
                     <div className="pilot-item" key={`${item.categoryKey}-${item.stimulus}`}>
                       <strong>{item.stimulus}</strong>
                       <span>
@@ -107,6 +105,27 @@ export default function ResultsRoute() {
                         {item.wrongCount ? ` • ${item.wrongCount} wrong` : ""}
                       </span>
                     </div>
+                  ))}
+                </div>
+              ) : null}
+              {currentPilotReview?.categories.some((category) => category.items.length) ? (
+                <div className="pilot-categories">
+                  <h3>Words by category</h3>
+                  {currentPilotReview.categories.map((category) => (
+                    <section className="pilot-category" key={category.key}>
+                      <h4>{category.label}</h4>
+                      {category.items.length ? category.items.map((item) => (
+                        <div className="pilot-item" key={`${item.categoryKey}-${item.stimulus}`}>
+                          <strong>{item.stimulus}</strong>
+                          <span>
+                            {Math.round(item.averageLatencyMs)} ms avg
+                            {" • "}
+                            {item.seenCount} shown
+                            {item.wrongCount ? ` • ${item.wrongCount} wrong` : ""}
+                          </span>
+                        </div>
+                      )) : <p className="empty">No items in this category were shown.</p>}
+                    </section>
                   ))}
                 </div>
               ) : null}

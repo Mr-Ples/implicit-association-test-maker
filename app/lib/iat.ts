@@ -222,16 +222,29 @@ export function scorePilotTrials(trials: Trial[]): ScoreResult {
   };
 }
 
+export interface PilotItemSummary {
+  stimulus: string;
+  categoryKey: Trial["categoryKey"];
+  firstSeenIndex: number;
+  seenCount: number;
+  wrongCount: number;
+  totalLatencyMs: number;
+  averageLatencyMs: number;
+}
+
+export interface PilotReviewGroup {
+  key: Trial["categoryKey"];
+  label: string;
+  items: PilotItemSummary[];
+}
+
+export interface PilotReviewSummary {
+  slowestItems: PilotItemSummary[];
+  categories: PilotReviewGroup[];
+}
+
 export function summarizePilotItems(trials: Trial[]) {
-  const itemMap = new Map<string, {
-    stimulus: string;
-    categoryKey: Trial["categoryKey"];
-    firstSeenIndex: number;
-    seenCount: number;
-    wrongCount: number;
-    totalLatencyMs: number;
-    averageLatencyMs: number;
-  }>();
+  const itemMap = new Map<string, PilotItemSummary>();
 
   trials.forEach((trial, index) => {
     const key = `${trial.categoryKey}:${trial.stimulus}`;
@@ -253,6 +266,19 @@ export function summarizePilotItems(trials: Trial[]) {
   });
 
   return [...itemMap.values()].sort((a, b) => a.firstSeenIndex - b.firstSeenIndex);
+}
+
+export function buildPilotReview(trials: Trial[], definition: TestDefinition): PilotReviewSummary {
+  const items = summarizePilotItems(trials);
+  const slowestItems = [...items].sort((a, b) => b.averageLatencyMs - a.averageLatencyMs).slice(0, 6);
+  const categories: PilotReviewGroup[] = [
+    { key: "conceptA", label: definition.conceptA.label, items: items.filter((item) => item.categoryKey === "conceptA") },
+    { key: "conceptB", label: definition.conceptB.label, items: items.filter((item) => item.categoryKey === "conceptB") },
+    { key: "attributeA", label: definition.attributeA.label, items: items.filter((item) => item.categoryKey === "attributeA") },
+    { key: "attributeB", label: definition.attributeB.label, items: items.filter((item) => item.categoryKey === "attributeB") },
+  ];
+
+  return { slowestItems, categories };
 }
 
 export function interpretDScore(dScore: number | null) {

@@ -2,7 +2,7 @@ import { Form, Link, redirect, useLoaderData, useLocation } from "react-router";
 import { useEffect, useRef, useState } from "react";
 import type { Route } from "./+types/test";
 import { getTest, savePilotSession, saveResponse } from "~/lib/db.server";
-import { createPilotTrialPlan, createTrialPlan, scorePilotTrials, summarizePilotItems } from "~/lib/iat";
+import { buildPilotReview, createPilotTrialPlan, createTrialPlan, scorePilotTrials } from "~/lib/iat";
 import { HomeLink } from "~/components/icons";
 import type { Side, Trial } from "~/lib/types";
 
@@ -41,13 +41,14 @@ export default function TestRoute() {
   const { test } = useLoaderData<typeof loader>();
   const location = useLocation();
   const pilotMode = new URLSearchParams(location.search).get("mode") === "pilot";
-  const [phase, setPhase] = useState<"questionnaire" | "instructions" | "task" | "complete" | "pilot">(
+  const [phase, setPhase] = useState<"questionnaire" | "instructions" | "task" | "blockIntro" | "complete" | "pilot">(
     pilotMode ? "instructions" : "questionnaire",
   );
   const [participantId] = useState(() => crypto.randomUUID());
   const [answers, setAnswers] = useState<Record<string, string>>({});
   const [plan, setPlan] = useState<ReturnType<typeof createTrialPlan>>([]);
   const [index, setIndex] = useState(0);
+  const [nextBlockIndex, setNextBlockIndex] = useState<number | null>(null);
   const [trials, setTrials] = useState<Trial[]>([]);
   const [feedback, setFeedback] = useState<"correct" | "wrong" | null>(null);
   const [pilotNotes, setPilotNotes] = useState({
@@ -81,6 +82,7 @@ export default function TestRoute() {
   function startTask() {
     setPlan(pilotMode ? createPilotTrialPlan(test.definition) : createTrialPlan(test.definition));
     setIndex(0);
+    setNextBlockIndex(null);
     setTrials([]);
     setFeedback(null);
     setPhase("task");
@@ -97,6 +99,9 @@ export default function TestRoute() {
       setFeedback(null);
       if (index + 1 >= plan.length) {
         setPhase(pilotMode ? "pilot" : "complete");
+      } else if (plan[index + 1].block !== current.block) {
+        setNextBlockIndex(index + 1);
+        setPhase("blockIntro");
       } else {
         setIndex(index + 1);
       }
@@ -187,6 +192,47 @@ export default function TestRoute() {
     );
   }
 
+  if (phase === "blockIntro") {
+    const upcomingTrial = nextBlockIndex === null ? null : plan[nextBlockIndex];
+    const totalBlocks = plan.length ? Math.max(...plan.map((trial) => trial.block)) : 0;
+
+    return (
+      <main className="task-screen task-screen--intro">
+        <div className="task-top">
+          <div className="side-label"><kbd>E</kbd><strong>{upcomingTrial?.leftLabel}</strong></div>
+          <div className="progress"><span style={{ width: `${progress}%` }} /></div>
+          <div className="side-label right"><strong>{upcomingTrial?.rightLabel}</strong><kbd>I</kbd></div>
+        </div>
+        <div className="stimulus">
+          <div className="block-intro">
+            <p className="eyebrow">Block change</p>
+            <h2>Block {upcomingTrial?.block} of {totalBlocks}</h2>
+            <p>
+              New block: use E for the left side and I for the right side. The labels below are the ones that apply
+              in this block.
+            </p>
+            <div className="instruction-grid">
+              <div><strong>Left key</strong><span>{upcomingTrial?.leftLabel}</span></div>
+              <div><strong>Right key</strong><span>{upcomingTrial?.rightLabel}</span></div>
+            </div>
+            <button
+              className="button primary"
+              type="button"
+              onClick={() => {
+                if (nextBlockIndex === null) return;
+                setIndex(nextBlockIndex);
+                setNextBlockIndex(null);
+                setPhase("task");
+              }}
+            >
+              Start next block
+            </button>
+          </div>
+        </div>
+      </main>
+    );
+  }
+
   if (phase === "complete") {
     return (
       <main className="shell narrow">
@@ -233,7 +279,7 @@ export default function TestRoute() {
   }
 
   const summary = scorePilotTrials(trials);
-  const reviewItems = summarizePilotItems(trials);
+  const review = buildPilotReview(trials, test.definition);
   const errorTrials = trials.filter((trial) => !trial.correct);
 
   return (
@@ -257,13 +303,13 @@ export default function TestRoute() {
         <div className="pilot-summary">
           <div><strong>{formatPercent(summary.errorRate)}</strong><span>Error rate</span></div>
           <div><strong>{formatPercent(summary.fastRate)}</strong><span>Fast-response rate</span></div>
-          <div><strong>{reviewItems.length}</strong><span>Words reviewed</span></div>
+          <div><strong>{review.categories.reduce((total, category) => total + category.items.length, 0)}</strong><span>Words reviewed</span></div>
           <div><strong>{errorTrials.length}</strong><span>Wrong responses</span></div>
         </div>
-        {reviewItems.length ? (
+        {review.slowestItems.length ? (
           <div className="pilot-list">
-            <h3>All words shown</h3>
-            {reviewItems.map((item) => (
+            <h3>Slowest words</h3>
+            {review.slowestItems.map((item) => (
               <div className="pilot-item" key={`${item.categoryKey}-${item.stimulus}`}>
                 <strong>{item.stimulus}</strong>
                 <span>
@@ -273,6 +319,27 @@ export default function TestRoute() {
                   {item.wrongCount ? ` • ${item.wrongCount} wrong` : ""}
                 </span>
               </div>
+            ))}
+          </div>
+        ) : null}
+        {review.categories.some((category) => category.items.length) ? (
+          <div className="pilot-categories">
+            <h3>Words by category</h3>
+            {review.categories.map((category) => (
+              <section className="pilot-category" key={category.key}>
+                <h4>{category.label}</h4>
+                {category.items.length ? category.items.map((item) => (
+                  <div className="pilot-item" key={`${item.categoryKey}-${item.stimulus}`}>
+                    <strong>{item.stimulus}</strong>
+                    <span>
+                      {Math.round(item.averageLatencyMs)} ms avg
+                      {" • "}
+                      {item.seenCount} shown
+                      {item.wrongCount ? ` • ${item.wrongCount} wrong` : ""}
+                    </span>
+                  </div>
+                )) : <p className="empty">No items in this category were shown.</p>}
+              </section>
             ))}
           </div>
         ) : null}

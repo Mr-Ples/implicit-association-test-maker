@@ -211,6 +211,12 @@ legend {
   font-size: 0.9rem;
 }
 
+.questionnaire-footer {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 4px;
+}
+
 .category-panel {
   align-content: start;
 }
@@ -666,9 +672,47 @@ kbd {
   pointer-events: none;
 }
 
+.task-screen--intro .stimulus {
+  pointer-events: auto;
+}
+
 .stimulus span {
   font-size: clamp(3rem, 10vw, 8rem);
   font-weight: 900;
+}
+
+.block-intro {
+  display: grid;
+  gap: 14px;
+  width: min(520px, calc(100vw - 32px));
+  max-width: 100%;
+  padding: 24px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.96);
+  box-shadow: var(--shadow);
+  text-align: left;
+}
+
+.block-intro h2 {
+  margin-bottom: 0;
+}
+
+.block-intro .instruction-grid {
+  margin: 0;
+}
+
+.block-intro .instruction-grid div {
+  padding: 12px 14px;
+}
+
+.block-intro .instruction-grid span {
+  font-size: 1.2rem;
+  line-height: 1.2;
+}
+
+.block-intro .button {
+  justify-self: end;
 }
 
 .feedback {
@@ -729,6 +773,21 @@ kbd {
 .pilot-list {
   display: grid;
   gap: 10px;
+}
+
+.pilot-categories {
+  display: grid;
+  gap: 16px;
+}
+
+.pilot-category {
+  display: grid;
+  gap: 10px;
+}
+
+.pilot-category h4 {
+  margin: 0;
+  font-size: 0.98rem;
 }
 
 .pilot-list h3,
