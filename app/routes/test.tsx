@@ -60,6 +60,10 @@ export default function TestRoute() {
   const acceptingResponse = useRef(true);
   const current = plan[index];
   const progress = plan.length ? Math.round((index / plan.length) * 100) : 0;
+  const firstBlockInstructions = [
+    { key: "E", side: "Left key", label: test.definition.conceptA.label, words: test.definition.conceptA.items },
+    { key: "I", side: "Right key", label: test.definition.conceptB.label, words: test.definition.conceptB.items },
+  ];
 
   useEffect(() => {
     function onKeyDown(event: KeyboardEvent) {
@@ -181,10 +185,19 @@ export default function TestRoute() {
         <section className="take-card">
           <p className="eyebrow">Task instructions</p>
           <h2>Task instructions</h2>
-          <p>Classify each item as quickly and accurately as possible. Use E for the left side and I for the right side.</p>
+          <p>
+            Classify each item as quickly and accurately as possible. Use E for the left side and I for the right side.
+            The first block starts with these words.
+          </p>
           <div className="instruction-grid">
-            <div><strong>Left key</strong><span>E</span></div>
-            <div><strong>Right key</strong><span>I</span></div>
+            {firstBlockInstructions.map((instruction) => (
+              <div key={instruction.key}>
+                <strong>{instruction.side}</strong>
+                <span>{instruction.key}</span>
+                <b>{instruction.label}</b>
+                {/* <small className="instruction-words">{instruction.words.join(", ")}</small> */}
+              </div>
+            ))}
           </div>
           <button className="button primary" type="button" onClick={startTask}>Start test</button>
         </section>

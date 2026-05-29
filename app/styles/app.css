@@ -589,6 +589,16 @@ dd {
   font-weight: 900;
 }
 
+.instruction-grid b {
+  font-size: 1.05rem;
+}
+
+.instruction-words {
+  color: var(--muted);
+  font-weight: 700;
+  line-height: 1.4;
+}
+
 .task-screen {
   position: relative;
   min-height: 100vh;
