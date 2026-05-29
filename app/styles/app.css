@@ -441,8 +441,10 @@ dd {
 }
 
 .card-actions {
-  position: relative;
-  z-index: 3;
+  position: absolute;
+  top: 18px;
+  left: 18px;
+  z-index: 4;
 }
 
 .more-menu {
@@ -964,14 +966,38 @@ kbd {
   }
 
   .task-top {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr) minmax(84px, 120px) minmax(0, 1fr);
+    gap: 10px;
     padding: 14px;
   }
 
-  .side-label,
-  .side-label.right {
-    justify-content: space-between;
+  .side-label {
+    justify-content: flex-start;
     text-align: left;
+    min-width: 0;
+    min-height: 56px;
+    padding: 10px 12px;
+    font-size: 0.92rem;
+  }
+
+  .side-label.right {
+    justify-content: flex-end;
+    text-align: right;
+  }
+
+  .side-label strong {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .task-top kbd {
+    display: none;
+  }
+
+  .progress {
+    height: 8px;
   }
 
   .table-row {
@@ -1006,7 +1032,12 @@ kbd {
 
   .top-actions {
     justify-self: stretch;
-    flex-wrap: wrap;
-    white-space: normal;
+    flex-wrap: nowrap;
+    white-space: nowrap;
+    overflow-x: auto;
+  }
+
+  .top-actions .button {
+    width: auto;
   }
 }
