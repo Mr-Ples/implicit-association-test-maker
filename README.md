@@ -51,6 +51,8 @@ The app stores each participant's questionnaire answers, trial-level responses, 
 
 Positive D-scores indicate faster compatible-pair classifications than incompatible-pair classifications for the configured category order.
 
+Pilot mode is intentionally shorter than the full run. It uses only the first two single-category blocks, so participants usually complete 40 trials before seeing the pilot review screen.
+
 ## Existing IAT predictive validity
 
 | IAT domain                 |                         Predicted outcome | Typical association | Approx. Cohen’s d | Interpretation               | What it means in practice                                                                                                                                                                                       |

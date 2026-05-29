@@ -356,6 +356,27 @@ dd {
   justify-content: space-between;
   gap: 20px;
   padding: 18px;
+  position: relative;
+  transition: border-color 160ms ease, box-shadow 160ms ease, transform 160ms ease;
+}
+
+.test-card:hover {
+  border-color: #b6c0ca;
+  box-shadow: 0 20px 54px rgba(24, 36, 51, 0.14);
+  transform: translateY(-1px);
+}
+
+.test-card:has(.test-card-run-overlay:focus-visible) {
+  outline: 3px solid rgba(23, 107, 95, 0.28);
+  outline-offset: 3px;
+}
+
+.test-card-run-overlay {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  z-index: 2;
+  cursor: pointer;
 }
 
 .test-card p {
@@ -365,6 +386,54 @@ dd {
 .test-card span,
 .empty {
   color: var(--muted);
+}
+
+.test-card-main {
+  position: relative;
+  z-index: 1;
+}
+
+.card-actions {
+  position: relative;
+  z-index: 3;
+}
+
+.more-menu {
+  position: relative;
+}
+
+.more-menu summary {
+  list-style: none;
+}
+
+.more-menu summary::-webkit-details-marker {
+  display: none;
+}
+
+.more-menu-items {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 8px);
+  min-width: 168px;
+  display: grid;
+  padding: 6px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #ffffff;
+  box-shadow: var(--shadow);
+  z-index: 4;
+}
+
+.more-menu-items a {
+  border-radius: 6px;
+  padding: 10px 12px;
+  color: var(--ink);
+  font-weight: 800;
+  text-decoration: none;
+}
+
+.more-menu-items a:hover {
+  background: #f0f3f5;
 }
 
 .notice {

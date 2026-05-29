@@ -41,11 +41,12 @@ export default function Home() {
 
       <section className="saved">
         <div className="section-heading">
-          <h2>Studies</h2>
+          <h2>Implicit Association Tests</h2>
         </div>
         <div className="test-list">
           {tests.length ? tests.map((test) => (
             <article className="test-card" key={test.id}>
+              <Link className="test-card-run-overlay" to={`/tests/${test.id}`} aria-label={`Run ${test.name}`} />
               <div className="test-card-main">
                 <h3>{test.name}</h3>
                 <p>{test.description || "No description"}</p>
@@ -55,10 +56,14 @@ export default function Home() {
                 </div>
               </div>
               <div className="card-actions">
-                <Link className="button secondary" to={`/tests/${test.id}`}>Run</Link>
-                <Link className="button secondary" to={`/tests/${test.id}?mode=pilot`}>Pilot</Link>
-                <Link className="button secondary" to={`/tests/${test.id}/results`}>Results</Link>
-                <Link className="button secondary" to={`/create?clone=${test.id}`}>Copy</Link>
+                <details className="more-menu">
+                  <summary className="button secondary">More options</summary>
+                  <div className="more-menu-items">
+                    <Link to={`/tests/${test.id}?mode=pilot`}>Pilot</Link>
+                    <Link to={`/tests/${test.id}/results`}>Results</Link>
+                    <Link to={`/create?clone=${test.id}`}>Duplicate</Link>
+                  </div>
+                </details>
               </div>
             </article>
           )) : <p className="empty">No tests saved yet. Create one to get started.</p>}

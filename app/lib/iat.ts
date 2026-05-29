@@ -121,6 +121,13 @@ export function createTrialPlan(definition: TestDefinition): Array<Omit<Trial, "
   return blocks.flat();
 }
 
+export function createPilotTrialPlan(definition: TestDefinition): Array<Omit<Trial, "responseSide" | "latencyMs" | "correct">> {
+  return [
+    block(1, 20, ["conceptA", "conceptB"], conceptBlockConfig("normal", definition), "target", "training", definition),
+    block(2, 20, ["attributeA", "attributeB"], attributeBlockConfig(definition), "attribute", "training", definition),
+  ].flat();
+}
+
 export function scoreTrials(trials: Trial[]): ScoreResult {
   const usable = trials.filter((trial) => trial.condition === "compatible" || trial.condition === "incompatible");
   const fastCount = usable.filter((trial) => trial.latencyMs < 300).length;

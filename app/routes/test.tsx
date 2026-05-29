@@ -2,7 +2,7 @@ import { Form, Link, redirect, useLoaderData, useLocation } from "react-router";
 import { useEffect, useRef, useState } from "react";
 import type { Route } from "./+types/test";
 import { getTest, savePilotSession, saveResponse } from "~/lib/db.server";
-import { createTrialPlan } from "~/lib/iat";
+import { createPilotTrialPlan, createTrialPlan } from "~/lib/iat";
 import type { Side, Trial } from "~/lib/types";
 
 export async function loader({ params, context }: Route.LoaderArgs) {
@@ -17,7 +17,9 @@ export async function action({ request, params, context }: Route.ActionArgs) {
   const url = new URL(request.url);
   const formData = await request.formData();
   const participantId = String(formData.get("participantId") || crypto.randomUUID());
-  const questionnaire = JSON.parse(String(formData.get("questionnaire") || "{}")) as Record<string, string>;
+  const questionnaire = url.searchParams.get("mode") === "pilot"
+    ? {}
+    : JSON.parse(String(formData.get("questionnaire") || "{}")) as Record<string, string>;
   const trials = JSON.parse(String(formData.get("trials") || "[]")) as Trial[];
 
   if (url.searchParams.get("mode") === "pilot") {
@@ -38,7 +40,9 @@ export default function TestRoute() {
   const { test } = useLoaderData<typeof loader>();
   const location = useLocation();
   const pilotMode = new URLSearchParams(location.search).get("mode") === "pilot";
-  const [phase, setPhase] = useState<"questionnaire" | "instructions" | "task" | "complete" | "pilot">("questionnaire");
+  const [phase, setPhase] = useState<"questionnaire" | "instructions" | "task" | "complete" | "pilot">(
+    pilotMode ? "instructions" : "questionnaire",
+  );
   const [participantId] = useState(() => crypto.randomUUID());
   const [answers, setAnswers] = useState<Record<string, string>>({});
   const [plan, setPlan] = useState<ReturnType<typeof createTrialPlan>>([]);
@@ -74,7 +78,7 @@ export default function TestRoute() {
   }, [phase, index]);
 
   function startTask() {
-    setPlan(createTrialPlan(test.definition));
+    setPlan(pilotMode ? createPilotTrialPlan(test.definition) : createTrialPlan(test.definition));
     setIndex(0);
     setTrials([]);
     setFeedback(null);
@@ -98,7 +102,7 @@ export default function TestRoute() {
     }, correct ? 120 : 450);
   }
 
-  if (phase === "questionnaire") {
+  if (phase === "questionnaire" && !pilotMode) {
     return (
       <main className="shell narrow">
         <section className="topbar">
@@ -274,7 +278,6 @@ export default function TestRoute() {
         ) : null}
         <Form method="post" action={`${location.pathname}?mode=pilot`} className="builder-form">
           <input type="hidden" name="participantId" value={participantId} />
-          <input type="hidden" name="questionnaire" value={JSON.stringify(answers)} />
           <input type="hidden" name="trials" value={JSON.stringify(trials)} />
           <label>
             Confusing or double-meaning words
