@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from "react";
 import type { Route } from "./+types/test";
 import { getTest, savePilotSession, saveResponse } from "~/lib/db.server";
 import { createPilotTrialPlan, createTrialPlan, scorePilotTrials, summarizePilotItems } from "~/lib/iat";
+import { HomeLink } from "~/components/icons";
 import type { Side, Trial } from "~/lib/types";
 
 export async function loader({ params, context }: Route.LoaderArgs) {
@@ -111,8 +112,7 @@ export default function TestRoute() {
             <h1>{test.name}</h1>
           </div>
           <div className="top-actions">
-            <Link className="button secondary" to="/">Saved tests</Link>
-            <Link className="button secondary" to={`/tests/${test.id}?mode=pilot`}>Pilot test</Link>
+            <HomeLink to="/" />
           </div>
         </section>
         <section className="take-card">
@@ -170,8 +170,7 @@ export default function TestRoute() {
             <h1>{test.name}</h1>
           </div>
           <div className="top-actions">
-            <Link className="button secondary" to="/">Saved tests</Link>
-            <Link className="button secondary" to={`/tests/${test.id}?mode=pilot`}>Pilot test</Link>
+            <HomeLink to="/" />
           </div>
         </section>
         <section className="take-card">
@@ -197,8 +196,7 @@ export default function TestRoute() {
             <h1>{test.name}</h1>
           </div>
           <div className="top-actions">
-            <Link className="button secondary" to="/">Saved tests</Link>
-            <Link className="button secondary" to={`/tests/${test.id}?mode=pilot`}>Pilot test</Link>
+            <HomeLink to="/" />
           </div>
         </section>
         <section className="take-card">
@@ -229,7 +227,7 @@ export default function TestRoute() {
           <span>{current?.stimulus}</span>
           {feedback === "wrong" ? <strong className="feedback">X</strong> : null}
         </div>
-        <div className="block-label">Block {current?.block} of 7</div>
+        {!pilotMode ? <div className="block-label">Block {current?.block} of 7</div> : null}
       </main>
     );
   }
@@ -246,8 +244,7 @@ export default function TestRoute() {
           <h1>{test.name}</h1>
         </div>
         <div className="top-actions">
-          <Link className="button secondary" to="/">Saved tests</Link>
-          <Link className="button secondary" to={`/tests/${test.id}`}>Standard run</Link>
+          <HomeLink to="/" />
         </div>
       </section>
       <section className="take-card pilot-review">

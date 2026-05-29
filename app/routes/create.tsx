@@ -1,8 +1,9 @@
-import { Form, Link, redirect, useActionData, useLoaderData } from "react-router";
+import { Form, redirect, useActionData, useLoaderData } from "react-router";
 import { useEffect, useMemo, useState } from "react";
 import type { Route } from "./+types/create";
 import { createTest, getTest } from "~/lib/db.server";
 import { defaultDefinition, isDefaultQuestionnaireQuestion, normalizeDefinition } from "~/lib/iat";
+import { HomeLink } from "~/components/icons";
 import type { QuestionnaireQuestion, TestDefinition } from "~/lib/types";
 
 type StimulusText = Record<"conceptA" | "conceptB" | "attributeA" | "attributeB", string>;
@@ -99,7 +100,7 @@ export default function CreateRoute() {
           <h1>Build an IAT study</h1>
         </div>
         <div className="top-actions">
-          <Link className="button secondary" to="/">Back</Link>
+          <HomeLink to="/" />
         </div>
       </section>
 

@@ -1,6 +1,8 @@
 import { Link, useLoaderData } from "react-router";
+import { useEffect, useRef, useState } from "react";
 import type { Route } from "./+types/home";
 import { listTests } from "~/lib/db.server";
+import { MoreHorizontalIcon } from "~/components/icons";
 
 export async function loader({ context }: Route.LoaderArgs) {
   return { tests: await listTests(context.cloudflare.env.DB) };
@@ -56,19 +58,59 @@ export default function Home() {
                 </div>
               </div>
               <div className="card-actions">
-                <details className="more-menu">
-                  <summary className="button secondary">More options</summary>
-                  <div className="more-menu-items">
-                    <Link to={`/tests/${test.id}?mode=pilot`}>Pilot</Link>
-                    <Link to={`/tests/${test.id}/results`}>Results</Link>
-                    <Link to={`/create?clone=${test.id}`}>Duplicate</Link>
-                  </div>
-                </details>
+                <TestMoreMenu testId={test.id} />
               </div>
             </article>
           )) : <p className="empty">No tests saved yet. Create one to get started.</p>}
         </div>
       </section>
     </main>
+  );
+}
+
+function TestMoreMenu({ testId }: { testId: string }) {
+  const [open, setOpen] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    function onPointerDown(event: PointerEvent) {
+      if (!open || !menuRef.current) return;
+      if (!menuRef.current.contains(event.target as Node)) {
+        setOpen(false);
+      }
+    }
+
+    function onKeyDown(event: KeyboardEvent) {
+      if (event.key === "Escape") setOpen(false);
+    }
+
+    document.addEventListener("pointerdown", onPointerDown);
+    document.addEventListener("keydown", onKeyDown);
+    return () => {
+      document.removeEventListener("pointerdown", onPointerDown);
+      document.removeEventListener("keydown", onKeyDown);
+    };
+  }, [open]);
+
+  return (
+    <div className="more-menu" ref={menuRef}>
+      <button
+        className="button secondary icon-button"
+        type="button"
+        aria-label="More options"
+        aria-haspopup="menu"
+        aria-expanded={open}
+        onClick={() => setOpen((value) => !value)}
+      >
+        <MoreHorizontalIcon width="18" height="18" aria-hidden="true" />
+      </button>
+      {open ? (
+        <div className="more-menu-items" role="menu">
+          <Link role="menuitem" to={`/tests/${testId}?mode=pilot`} onClick={() => setOpen(false)}>Pilot</Link>
+          <Link role="menuitem" to={`/tests/${testId}/results`} onClick={() => setOpen(false)}>Results</Link>
+          <Link role="menuitem" to={`/create?clone=${testId}`} onClick={() => setOpen(false)}>Duplicate</Link>
+        </div>
+      ) : null}
+    </div>
   );
 }

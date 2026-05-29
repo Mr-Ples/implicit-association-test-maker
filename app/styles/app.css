@@ -252,6 +252,16 @@ legend {
   cursor: pointer;
 }
 
+.icon-button {
+  width: 40px;
+  min-width: 40px;
+  padding: 0;
+}
+
+.icon-button svg {
+  display: block;
+}
+
 .button:disabled,
 input:disabled,
 textarea:disabled,
@@ -425,6 +435,7 @@ dd {
 }
 
 .more-menu-items a {
+  display: block;
   border-radius: 6px;
   padding: 10px 12px;
   color: var(--ink);
@@ -876,6 +887,12 @@ kbd {
   .top-actions .button,
   .card-actions .button {
     width: 100%;
+  }
+
+  .top-actions .icon-button,
+  .card-actions .icon-button {
+    width: 40px;
+    min-width: 40px;
   }
 
   .pilot-item {

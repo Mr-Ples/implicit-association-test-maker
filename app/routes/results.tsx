@@ -2,6 +2,7 @@ import { Link, useLoaderData } from "react-router";
 import type { Route } from "./+types/results";
 import { getPilotSession, getResponse, getTest, listPilotSessionsForTest, listResponsesForTest } from "~/lib/db.server";
 import { summarizePilotItems } from "~/lib/iat";
+import { HomeLink } from "~/components/icons";
 
 export async function loader({ request, params, context }: Route.LoaderArgs) {
   const url = new URL(request.url);
@@ -37,10 +38,7 @@ export default function ResultsRoute() {
           <h1>{test.name}</h1>
         </div>
         <div className="top-actions">
-          <Link className="button secondary" to="/">Saved tests</Link>
-          <Link className="button secondary" to={`/create?clone=${test.id}`}>Copy</Link>
-          <Link className="button secondary" to={`/tests/${test.id}?mode=pilot`}>Pilot</Link>
-          <Link className="button primary" to={`/tests/${test.id}`}>Run</Link>
+          <HomeLink to="/" />
         </div>
       </section>
 
