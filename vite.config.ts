@@ -11,5 +11,10 @@ export default defineConfig({
       "~": appDir,
     },
   },
-  plugins: [cloudflare(), reactRouter()],
+  plugins: [
+    cloudflare({
+      viteEnvironment: { name: "ssr" },
+    }),
+    reactRouter(),
+  ],
 });

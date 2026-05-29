@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "npx wrangler d1 migrations apply iat-maker --local && react-router dev",
     "build": "react-router build",
-    "deploy": "npx wrangler d1 migrations apply iat-maker --remote && wrangler deploy",
+    "deploy": "npm run build && npx wrangler d1 migrations apply iat-maker --remote && wrangler deploy",
     "typecheck": "react-router typegen && tsc"
   },
   "dependencies": {
