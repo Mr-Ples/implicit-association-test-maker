@@ -53,10 +53,6 @@ export default function Home() {
               <div className="test-card-main">
                 <h3>{test.name}</h3>
                 <p className="test-card-description">{renderLinkedText(test.description || "No description")}</p>
-                <div className="meta-line">
-                  <span>{test.responseCount} scored responses</span>
-                  <span>{test.averageDScore === null ? "No D-score yet" : `Average D-score ${test.averageDScore.toFixed(3)}`}</span>
-                </div>
               </div>
               <div className="card-actions">
                 <TestMoreMenu testId={test.id} />
