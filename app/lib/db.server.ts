@@ -1,4 +1,4 @@
-import { normalizeDefinition, scoreTrials } from "./iat";
+import { normalizeDefinition, scorePilotTrials, scoreTrials } from "./iat";
 import type { PilotFeedback, PilotSessionRecord, ResponseRecord, TestDefinition, TestRecord, Trial } from "./types";
 
 type TestRow = {
@@ -110,7 +110,7 @@ export async function savePilotSession(
   trials: Trial[],
   feedback: PilotFeedback,
 ) {
-  const score = scoreTrials(trials);
+  const score = scorePilotTrials(trials);
   const sessionId = crypto.randomUUID();
   await db
     .prepare(
@@ -174,13 +174,15 @@ function parseDefinition(json: string): TestDefinition {
 }
 
 function mapPilotSession(row: PilotSessionRow): PilotSessionRecord {
+  const trials = JSON.parse(row.trials_json) as Trial[];
+
   return {
     id: row.id,
     testId: row.test_id,
     participantId: row.participant_id,
     questionnaire: JSON.parse(row.questionnaire_json) as Record<string, string>,
-    trials: JSON.parse(row.trials_json) as Trial[],
-    score: JSON.parse(row.score_json) as ReturnType<typeof scoreTrials>,
+    trials,
+    score: scorePilotTrials(trials),
     feedback: JSON.parse(row.feedback_json) as PilotFeedback,
     createdAt: row.created_at,
   };

@@ -206,6 +206,55 @@ export function scoreTrials(trials: Trial[]): ScoreResult {
   };
 }
 
+export function scorePilotTrials(trials: Trial[]): ScoreResult {
+  const fastCount = trials.filter((trial) => trial.latencyMs < 300).length;
+  const errorCount = trials.filter((trial) => !trial.correct).length;
+
+  return {
+    dScore: null,
+    compatibleMeanMs: null,
+    incompatibleMeanMs: null,
+    errorRate: trials.length ? errorCount / trials.length : 0,
+    fastRate: trials.length ? fastCount / trials.length : 0,
+    valid: true,
+    warnings: [],
+    interpretation: "Pilot review only",
+  };
+}
+
+export function summarizePilotItems(trials: Trial[]) {
+  const itemMap = new Map<string, {
+    stimulus: string;
+    categoryKey: Trial["categoryKey"];
+    firstSeenIndex: number;
+    seenCount: number;
+    wrongCount: number;
+    totalLatencyMs: number;
+    averageLatencyMs: number;
+  }>();
+
+  trials.forEach((trial, index) => {
+    const key = `${trial.categoryKey}:${trial.stimulus}`;
+    const item = itemMap.get(key) ?? {
+      stimulus: trial.stimulus,
+      categoryKey: trial.categoryKey,
+      firstSeenIndex: index,
+      seenCount: 0,
+      wrongCount: 0,
+      totalLatencyMs: 0,
+      averageLatencyMs: 0,
+    };
+
+    item.seenCount += 1;
+    item.wrongCount += trial.correct ? 0 : 1;
+    item.totalLatencyMs += trial.latencyMs;
+    item.averageLatencyMs = item.totalLatencyMs / item.seenCount;
+    itemMap.set(key, item);
+  });
+
+  return [...itemMap.values()].sort((a, b) => a.firstSeenIndex - b.firstSeenIndex);
+}
+
 export function interpretDScore(dScore: number | null) {
   if (dScore === null) return "Insufficient valid data";
   const strength = Math.abs(dScore) < 0.15 ? "little to no" : Math.abs(dScore) < 0.35 ? "slight" : Math.abs(dScore) < 0.65 ? "moderate" : "strong";

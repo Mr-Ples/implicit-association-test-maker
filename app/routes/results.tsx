@@ -1,6 +1,7 @@
 import { Link, useLoaderData } from "react-router";
 import type { Route } from "./+types/results";
 import { getPilotSession, getResponse, getTest, listPilotSessionsForTest, listResponsesForTest } from "~/lib/db.server";
+import { summarizePilotItems } from "~/lib/iat";
 
 export async function loader({ request, params, context }: Route.LoaderArgs) {
   const url = new URL(request.url);
@@ -23,6 +24,10 @@ export async function loader({ request, params, context }: Route.LoaderArgs) {
 
 export default function ResultsRoute() {
   const { test, responses, pilotSessions, currentResponse, currentPilotSession, scores, average } = useLoaderData<typeof loader>();
+  const currentPilotItems = currentPilotSession ? summarizePilotItems(currentPilotSession.trials) : [];
+  const currentPilotErrorCount = currentPilotSession
+    ? currentPilotSession.trials.filter((trial) => !trial.correct).length
+    : 0;
 
   return (
     <main className="shell">
@@ -88,8 +93,25 @@ export default function ResultsRoute() {
                 <div><dt>Compatible mean</dt><dd>{formatMs(currentPilotSession.score.compatibleMeanMs)}</dd></div>
                 <div><dt>Incompatible mean</dt><dd>{formatMs(currentPilotSession.score.incompatibleMeanMs)}</dd></div>
                 <div><dt>Error rate</dt><dd>{formatPercent(currentPilotSession.score.errorRate)}</dd></div>
+                <div><dt>Wrong responses</dt><dd>{currentPilotErrorCount}</dd></div>
                 <div><dt>Fast-response rate</dt><dd>{formatPercent(currentPilotSession.score.fastRate)}</dd></div>
               </dl>
+              {currentPilotItems.length ? (
+                <div className="pilot-list">
+                  <h3>All words shown</h3>
+                  {currentPilotItems.map((item) => (
+                    <div className="pilot-item" key={`${item.categoryKey}-${item.stimulus}`}>
+                      <strong>{item.stimulus}</strong>
+                      <span>
+                        {Math.round(item.averageLatencyMs)} ms avg
+                        {" • "}
+                        {item.seenCount} shown
+                        {item.wrongCount ? ` • ${item.wrongCount} wrong` : ""}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              ) : null}
               <div className="pilot-notes">
                 <h3>Confusing items</h3>
                 <p>{currentPilotSession.feedback.confusingItems.length ? currentPilotSession.feedback.confusingItems.join(", ") : "None recorded"}</p>

@@ -2,7 +2,7 @@ import { Form, Link, redirect, useLoaderData, useLocation } from "react-router";
 import { useEffect, useRef, useState } from "react";
 import type { Route } from "./+types/test";
 import { getTest, savePilotSession, saveResponse } from "~/lib/db.server";
-import { createPilotTrialPlan, createTrialPlan } from "~/lib/iat";
+import { createPilotTrialPlan, createTrialPlan, scorePilotTrials, summarizePilotItems } from "~/lib/iat";
 import type { Side, Trial } from "~/lib/types";
 
 export async function loader({ params, context }: Route.LoaderArgs) {
@@ -234,10 +234,8 @@ export default function TestRoute() {
     );
   }
 
-  const summary = summarizeTrials(trials);
-  const slowTrials = [...trials]
-    .sort((a, b) => b.latencyMs - a.latencyMs)
-    .slice(0, 6);
+  const summary = scorePilotTrials(trials);
+  const reviewItems = summarizePilotItems(trials);
   const errorTrials = trials.filter((trial) => !trial.correct);
 
   return (
@@ -262,16 +260,21 @@ export default function TestRoute() {
         <div className="pilot-summary">
           <div><strong>{formatPercent(summary.errorRate)}</strong><span>Error rate</span></div>
           <div><strong>{formatPercent(summary.fastRate)}</strong><span>Fast-response rate</span></div>
-          <div><strong>{slowTrials.length}</strong><span>Slow items flagged</span></div>
+          <div><strong>{reviewItems.length}</strong><span>Words reviewed</span></div>
           <div><strong>{errorTrials.length}</strong><span>Wrong responses</span></div>
         </div>
-        {slowTrials.length ? (
+        {reviewItems.length ? (
           <div className="pilot-list">
-            <h3>Slowest items</h3>
-            {slowTrials.map((trial) => (
-              <div className="pilot-item" key={`${trial.block}-${trial.stimulus}-${trial.latencyMs}`}>
-                <strong>{trial.stimulus}</strong>
-                <span>{trial.latencyMs} ms{trial.correct ? "" : " • wrong response"}</span>
+            <h3>All words shown</h3>
+            {reviewItems.map((item) => (
+              <div className="pilot-item" key={`${item.categoryKey}-${item.stimulus}`}>
+                <strong>{item.stimulus}</strong>
+                <span>
+                  {Math.round(item.averageLatencyMs)} ms avg
+                  {" • "}
+                  {item.seenCount} shown
+                  {item.wrongCount ? ` • ${item.wrongCount} wrong` : ""}
+                </span>
               </div>
             ))}
           </div>
@@ -311,15 +314,6 @@ export default function TestRoute() {
       </section>
     </main>
   );
-}
-
-function summarizeTrials(trials: Trial[]) {
-  const usable = trials.filter((trial) => trial.condition === "compatible" || trial.condition === "incompatible");
-  const fastCount = usable.filter((trial) => trial.latencyMs < 300).length;
-  return {
-    errorRate: usable.length ? usable.filter((trial) => !trial.correct).length / usable.length : 0,
-    fastRate: usable.length ? fastCount / usable.length : 0,
-  };
 }
 
 function parseLines(value: string) {
