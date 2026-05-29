@@ -80,6 +80,10 @@ a {
   overflow-wrap: anywhere;
 }
 
+.mobile-only {
+  display: none;
+}
+
 h1,
 h2,
 h3,
@@ -947,9 +951,24 @@ kbd {
 
   .topbar,
   .topbar--solo {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: start;
     min-height: 0;
     padding: 16px;
+  }
+
+  .topbar-title h1 {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .desktop-only {
+    display: none;
+  }
+
+  .mobile-only {
+    display: inline;
   }
 
   .workspace,
@@ -993,6 +1012,10 @@ kbd {
     white-space: nowrap;
   }
 
+  .instruction-key {
+    display: none;
+  }
+
   .task-top kbd {
     display: none;
   }
@@ -1032,13 +1055,17 @@ kbd {
   }
 
   .top-actions {
-    justify-self: stretch;
+    justify-self: end;
+    align-self: start;
+    align-items: center;
     flex-wrap: nowrap;
     white-space: nowrap;
-    overflow-x: auto;
+    overflow: hidden;
+    gap: 8px;
   }
 
   .top-actions .button {
     width: auto;
+    flex-shrink: 0;
   }
 }

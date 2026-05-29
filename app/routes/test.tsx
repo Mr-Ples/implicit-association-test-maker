@@ -186,14 +186,16 @@ export default function TestRoute() {
         <section className="take-card">
           <p className="eyebrow">Task instructions</p>
           <p>
-            Classify each item as quickly and accurately as possible. Use E for the left side and I for the right side.
+            Classify each item as quickly and accurately as possible.
+            <span className="desktop-only"> Use E for the left side and I for the right side.</span>
+            <span className="mobile-only"> Tap the left side and right side of the screen.</span>
             The first block starts with these words.
           </p>
           <div className="instruction-grid">
             {firstBlockInstructions.map((instruction) => (
               <div key={instruction.key}>
                 <strong>{instruction.side}</strong>
-                <span>{instruction.key}</span>
+                <span className="instruction-key">{instruction.key}</span>
                 <b>{instruction.label}</b>
                 <small className="instruction-words">{instruction.words.join(", ")}</small>
               </div>
@@ -223,8 +225,10 @@ export default function TestRoute() {
             <p className="eyebrow">Block change</p>
             <h2>Block {upcomingTrial?.block} of {totalBlocks}</h2>
             <p>
-              New block: use E for the left side and I for the right side. The labels below are the ones that apply
-              in this block.
+              New block:
+              <span className="desktop-only"> use E for the left side and I for the right side.</span>
+              <span className="mobile-only"> use the left side and right side.</span>
+              The labels below are the ones that apply in this block.
             </p>
             <div className="instruction-grid">
               <div><strong>Left key</strong><span>{upcomingTrial?.leftLabel}</span></div>
