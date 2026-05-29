@@ -16,7 +16,7 @@ export default function Home() {
       <section className="topbar topbar--solo">
         <div className="topbar-title">
           <p className="eyebrow">Saved tests</p>
-          <h1>Implicit Association Test Maker</h1>
+          <h1>IAT Maker</h1>
         </div>
         <div className="top-actions">
           <a
@@ -106,7 +106,8 @@ function TestMoreMenu({ testId }: { testId: string }) {
       </button>
       {open ? (
         <div className="more-menu-items" role="menu">
-          <Link role="menuitem" to={`/tests/${testId}?mode=pilot`} onClick={() => setOpen(false)}>Pilot</Link>
+          <Link role="menuitem" to={`/tests/${testId}`} onClick={() => setOpen(false)}>Start</Link>
+          <Link role="menuitem" to={`/tests/${testId}?mode=pilot`} onClick={() => setOpen(false)}>Pilot Test</Link>
           <Link role="menuitem" to={`/tests/${testId}/results`} onClick={() => setOpen(false)}>Results</Link>
           <Link role="menuitem" to={`/create?clone=${testId}`} onClick={() => setOpen(false)}>Duplicate</Link>
         </div>
