@@ -13,7 +13,7 @@
 		{
 			"binding": "DB",
 			"database_name": "iat-maker",
-			"database_id": "replace-with-your-d1-database-id",
+			"database_id": "a018868b-9979-472f-a9f5-9489a72afa9f",
 			"migrations_dir": "migrations"
 		},
 		{
