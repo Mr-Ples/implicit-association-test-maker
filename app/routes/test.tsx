@@ -62,8 +62,20 @@ export default function TestRoute() {
   const current = plan[index];
   const progress = plan.length ? Math.round((index / plan.length) * 100) : 0;
   const firstBlockInstructions = [
-    { key: "E", side: "Left key", label: test.definition.conceptA.label, words: test.definition.conceptA.items },
-    { key: "I", side: "Right key", label: test.definition.conceptB.label, words: test.definition.conceptB.items },
+    {
+      key: "E",
+      sideDesktop: "Left key",
+      sideMobile: "Left side",
+      label: test.definition.conceptA.label,
+      words: test.definition.conceptA.items,
+    },
+    {
+      key: "I",
+      sideDesktop: "Right key",
+      sideMobile: "Right side",
+      label: test.definition.conceptB.label,
+      words: test.definition.conceptB.items,
+    },
   ];
 
   useEffect(() => {
@@ -194,7 +206,10 @@ export default function TestRoute() {
           <div className="instruction-grid">
             {firstBlockInstructions.map((instruction) => (
               <div key={instruction.key}>
-                <strong>{instruction.side}</strong>
+                <strong>
+                  <span className="desktop-only">{instruction.sideDesktop}</span>
+                  <span className="mobile-only">{instruction.sideMobile}</span>
+                </strong>
                 <span className="instruction-key">{instruction.key}</span>
                 <b>{instruction.label}</b>
                 <small className="instruction-words">{instruction.words.join(", ")}</small>
@@ -231,8 +246,20 @@ export default function TestRoute() {
               The labels below are the ones that apply in this block.
             </p>
             <div className="instruction-grid">
-              <div><strong>Left key</strong><span>{upcomingTrial?.leftLabel}</span></div>
-              <div><strong>Right key</strong><span>{upcomingTrial?.rightLabel}</span></div>
+              <div>
+                <strong>
+                  <span className="desktop-only">Left key</span>
+                  <span className="mobile-only">Left side</span>
+                </strong>
+                <span>{upcomingTrial?.leftLabel}</span>
+              </div>
+              <div>
+                <strong>
+                  <span className="desktop-only">Right key</span>
+                  <span className="mobile-only">Right side</span>
+                </strong>
+                <span>{upcomingTrial?.rightLabel}</span>
+              </div>
             </div>
             <button
               className="button primary"
